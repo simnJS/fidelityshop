@@ -109,8 +109,8 @@ export default function GiveawaysPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-4">Nos Concours</h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold mb-4 text-white">Nos Concours</h1>
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
             Participez à nos concours pour avoir une chance de gagner des produits exclusifs et d'autres lots
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function GiveawaysPage() {
                       <div className="flex justify-between items-center">
                         <div>
                           <div className="text-sm text-gray-500">Se termine le:</div>
-                          <div className="text-sm font-medium">{formatDate(giveaway.endDate)}</div>
+                          <div className="text-sm font-medium text-gray-800">{formatDate(giveaway.endDate)}</div>
                         </div>
                         <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
                           {getTimeLeft(giveaway.endDate)}

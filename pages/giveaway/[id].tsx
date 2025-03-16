@@ -217,17 +217,17 @@ export default function GiveawayPublicPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Infos principales */}
           <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold mb-4">{giveaway.title}</h1>
+            <h1 className="text-3xl font-bold mb-4 text-white">{giveaway.title}</h1>
             
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Description</h2>
+              <h2 className="text-xl font-semibold mb-2 text-white">Description</h2>
               <div className="bg-white p-4 rounded-lg shadow whitespace-pre-line">
-                {giveaway.description}
+                <div className="text-gray-800">{giveaway.description}</div>
               </div>
             </div>
             
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Prix</h2>
+              <h2 className="text-xl font-semibold mb-2 text-white">Prix</h2>
               <div className="bg-white p-4 rounded-lg shadow">
                 {giveaway.product ? (
                   <div className="flex items-center">
@@ -256,7 +256,7 @@ export default function GiveawayPublicPage() {
             {/* Affichage du gagnant (pour les appareils mobiles) */}
             {isCompleted && giveaway.winnerId && (
               <div className="mb-6 lg:hidden">
-                <h2 className="text-xl font-semibold mb-2">Gagnant</h2>
+                <h2 className="text-xl font-semibold mb-2 text-white">Gagnant</h2>
                 <div className="bg-yellow-50 border-2 border-yellow-200 p-5 rounded-lg flex flex-col items-center">
                   <div className="text-yellow-800 text-lg uppercase font-bold mb-1">Félicitations</div>
                   <div className="text-2xl font-bold mb-2">{giveaway.winner?.username}</div>
@@ -285,7 +285,7 @@ export default function GiveawayPublicPage() {
               {/* Stats du concours */}
               <div className="mb-4">
                 <div className="text-sm font-medium text-gray-500 mb-1">Participants</div>
-                <div className="text-2xl font-bold">{giveaway._count?.entries || 0}</div>
+                <div className="text-2xl font-bold text-white">{giveaway._count?.entries || 0}</div>
               </div>
               
               <div className="mb-4">
@@ -293,11 +293,11 @@ export default function GiveawayPublicPage() {
                 <div className="space-y-1">
                   <div className="flex items-center text-sm">
                     <span className="text-gray-600 font-medium w-16">Début:</span> 
-                    <span>{formatDate(giveaway.startDate)}</span>
+                    <span className="text-white">{formatDate(giveaway.startDate)}</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <span className="text-gray-600 font-medium w-16">Fin:</span> 
-                    <span>{formatDate(giveaway.endDate)}</span>
+                    <span className="text-white">{formatDate(giveaway.endDate)}</span>
                   </div>
                 </div>
               </div>
