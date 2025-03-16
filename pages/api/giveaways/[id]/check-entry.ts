@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../../auth/[...nextauth]';
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,30 +24,29 @@ export default async function handler(
   }
 
   try {
-    console.log('API check-entry - Début de la requête, vérification du token');
+    console.log('API check-entry - Début de la requête, vérification de la session');
     
     // Debug - Afficher les cookies reçus
     console.log('Cookies reçus:', req.cookies);
     
-    const token = await getToken({ req });
+    // @ts-ignore - Ignorer l'erreur de type pour authOptions
+    const session = await getServerSession(req, res, authOptions);
     
-    console.log('Token obtenu:', token ? 'Token présent' : 'Token absent', 
-                token?.sub ? `sub: ${String(token.sub).substring(0, 5)}...` : 'pas de sub', 
-                token?.id ? `id: ${String(token.id).substring(0, 5)}...` : 'pas de id');
+    console.log('Session obtenue:', session ? 'Session présente' : 'Session absente', 
+                session?.user.id ? `id: ${String(session.user.id).substring(0, 5)}...` : 'pas de id');
     
-    if (!token) {
-      console.log('API check-entry - Pas de token JWT, retour 401');
+    if (!session) {
+      console.log('API check-entry - Pas de session, retour 401');
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    // Utiliser token.sub (standard JWT) ou token.id (compatibilité)
-    const userId = token.sub || token.id as string;
+    const userId = session.user.id;
     if (!userId) {
-      console.log('API check-entry - Token sans ID utilisateur', token);
-      return res.status(401).json({ error: 'Token invalide - pas d\'ID utilisateur' });
+      console.log('API check-entry - Session sans ID utilisateur', session);
+      return res.status(401).json({ error: 'Session invalide - pas d\'ID utilisateur' });
     }
 
-    console.log('API check-entry - Token valide, userID:', String(userId).substring(0, 5) + '...');
+    console.log('API check-entry - Session valide, userID:', String(userId).substring(0, 5) + '...');
 
     const giveawayId = req.query.id as string;
 
@@ -67,10 +67,10 @@ export default async function handler(
       return res.status(200).json({ hasEntered: !!entry });
     } catch (error: any) {
       console.error('Erreur lors de la vérification de la participation:', error);
-      return res.status(500).json({ error: 'Erreur serveur' });
+      return res.status(500).json({ error: 'Erreur serveur', details: error.message });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur globale dans check-entry:', error);
-    return res.status(500).json({ error: 'Erreur serveur interne' });
+    return res.status(500).json({ error: 'Erreur serveur interne', details: error.message });
   }
 } 

@@ -116,9 +116,18 @@ export default function GiveawayPublicPage() {
 
     try {
       setIsEntering(true);
-      await axios.post(`/api/giveaways/${id}/enter`);
+      const response = await axios.post(`/api/giveaways/${id}/enter`);
+      console.log('Réponse participation:', response.data);
       setHasEntered(true);
-      fetchGiveaway(); // Rafraîchir pour mettre à jour le nombre de participants
+      
+      // Ajouter un délai avant de rafraîchir pour éviter la redirection
+      setTimeout(() => {
+        fetchGiveaway(); // Rafraîchir pour mettre à jour le nombre de participants
+      }, 500);
+      
+      // Afficher une notification ou un message de confirmation ici
+      alert('Votre participation a été enregistrée avec succès !');
+      
     } catch (error: any) {
       console.error('Erreur lors de la participation au giveaway:', error);
       alert(`Erreur: ${error.response?.data?.error || 'Une erreur est survenue'}`);

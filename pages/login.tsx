@@ -48,9 +48,15 @@ export default function Login() {
     // Ne rediriger vers le dashboard que si l'utilisateur est authentifié
     // et s'il ne vient pas d'une tentative de déconnexion
     if (status === 'authenticated' && !router.query.from) {
-      router.push('/dashboard');
+      // Rediriger vers la page demandée si un paramètre redirect est présent
+      if (router.query.redirect) {
+        console.log('Redirection vers:', router.query.redirect);
+        router.push(router.query.redirect as string);
+      } else {
+        router.push('/dashboard');
+      }
     }
-  }, [status, router, router.query.from]);
+  }, [status, router, router.query.from, router.query.redirect]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,11 +74,14 @@ export default function Login() {
     try {
       console.log('Tentative de connexion avec:', { username: formData.username });
       
+      // Définir la page de redirection après connexion
+      const callbackUrl = router.query.redirect ? router.query.redirect as string : '/dashboard';
+      
       const result = await signIn('credentials', {
         username: formData.username,
         password: formData.password,
         redirect: false,
-        callbackUrl: '/dashboard'
+        callbackUrl: callbackUrl
       });
 
       console.log('Résultat de la connexion:', result);
@@ -83,7 +92,7 @@ export default function Login() {
         setError('Une erreur est survenue lors de la connexion');
       } else {
         // Forcer un rafraîchissement complet pour s'assurer que les cookies sont bien définis
-        window.location.href = '/dashboard';
+        window.location.href = callbackUrl;
       }
     } catch (err) {
       console.error('Erreur de connexion:', err);
