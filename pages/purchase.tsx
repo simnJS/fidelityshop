@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
 import { GetServerSidePropsContext } from 'next';
+import ProductImage from '../components/ProductImage';
 
 // Types pour notre application
 interface Product {
@@ -161,8 +162,8 @@ export default function PurchasePage() {
           <div key={product.id} className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div className="h-48 relative">
               {product.imageUrl ? (
-                <Image 
-                  src={product.imageUrl} 
+                <ProductImage 
+                  imageUrl={product.imageUrl} 
                   alt={product.name}
                   fill
                   className="object-cover"

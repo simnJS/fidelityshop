@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession, getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Image from 'next/image';
 import { GetServerSidePropsContext } from 'next';
+import Head from 'next/head';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import ProductImage from '../../components/ProductImage';
 
 // Types pour notre application
 interface Product {
@@ -36,6 +40,8 @@ export default function AdminProductsPage() {
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
+  const [showImageSelector, setShowImageSelector] = useState(false);
+  const [availableImages, setAvailableImages] = useState<string[]>([]);
 
   // Vérifier l'authentification
   useEffect(() => {
@@ -75,6 +81,24 @@ export default function AdminProductsPage() {
     }
   }, [session, router]);
   
+  useEffect(() => {
+    const fetchAvailableImages = async () => {
+      try {
+        const response = await fetch('/api/admin/images');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableImages(data.images);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des images:', error);
+      }
+    };
+
+    if (showImageSelector) {
+      fetchAvailableImages();
+    }
+  }, [showImageSelector]);
+
   const filteredProducts = () => {
     if (filterType === 'all') return products;
     if (filterType === 'loyalty') return products.filter(p => !p.isReward);
@@ -177,6 +201,14 @@ export default function AdminProductsPage() {
     }
   };
 
+  const selectImage = (imageUrl: string) => {
+    setFormData({
+      ...formData,
+      imageUrl
+    });
+    setShowImageSelector(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -228,13 +260,25 @@ export default function AdminProductsPage() {
           
           <div>
             <label className="block text-gray-300 mb-1">URL de l'image (optionnel)</label>
-            <input
-              type="text"
-              name="imageUrl"
-              value={formData.imageUrl}
-              onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleInputChange}
+                className="flex-1 px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowImageSelector(true)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Galerie
+              </button>
+              <Link href="/admin/images" className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-green-500">
+                Upload
+              </Link>
+            </div>
           </div>
           
           <div>
@@ -356,8 +400,8 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-2" style={{ width: '80px', height: '80px', position: 'relative' }}>
                       {product.imageUrl ? (
                         <div className="relative h-16 w-16">
-                          <Image 
-                            src={product.imageUrl} 
+                          <ProductImage 
+                            imageUrl={product.imageUrl} 
                             alt={product.name}
                             fill
                             className="object-cover rounded"
@@ -419,6 +463,54 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de sélection d'image */}
+      {showImageSelector && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg shadow-xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">Sélectionner une image</h3>
+              <button 
+                onClick={() => setShowImageSelector(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                &times;
+              </button>
+            </div>
+
+            {availableImages.length === 0 ? (
+              <p className="text-gray-400">Aucune image disponible. Veuillez en uploader via la page d'administration des images.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {availableImages.map((imageUrl, index) => (
+                  <div 
+                    key={index} 
+                    className="relative aspect-square cursor-pointer border border-gray-700 hover:border-blue-500 rounded-lg overflow-hidden"
+                    onClick={() => selectImage(imageUrl)}
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt={`Image ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowImageSelector(false)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

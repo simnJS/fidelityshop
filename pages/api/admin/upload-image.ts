@@ -78,8 +78,21 @@ export default async function handler(
           // Déplacer/renommer le fichier
           fs.renameSync(file.filepath, newFilePath);
 
-          // Construire l'URL publique
-          const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+          // Déterminer l'URL de base pour les images
+          let baseUrl = process.env.NEXT_PUBLIC_URL;
+          if (!baseUrl) {
+            // Fallback si l'URL publique n'est pas définie
+            const host = req.headers.host || 'localhost:3000';
+            const protocol = host.startsWith('localhost') ? 'http' : 'https';
+            baseUrl = `${protocol}://${host}`;
+          }
+
+          // Si baseUrl ne se termine pas par un slash, s'assurer que l'URL est bien formée
+          if (!baseUrl.endsWith('/')) {
+            baseUrl = baseUrl;
+          }
+
+          // Construire l'URL de l'image (absolue)
           const imageUrl = `${baseUrl}/uploads/${newFileName}`;
 
           res.status(200).json({ success: true, imageUrl });

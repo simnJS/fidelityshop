@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "setup:uploads": "node scripts/setup-uploads.js",
+    "prebuild": "npm run setup:uploads"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
