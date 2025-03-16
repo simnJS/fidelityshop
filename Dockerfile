@@ -29,7 +29,7 @@ COPY . .
 
 # Générer la version de production de l'application
 ENV NODE_ENV=production
-RUN npm run dev
+RUN npm run build
 
 # Image de production
 FROM node:20-alpine AS runner
