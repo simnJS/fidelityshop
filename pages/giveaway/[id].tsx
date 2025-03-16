@@ -285,7 +285,7 @@ export default function GiveawayPublicPage() {
               {/* Stats du concours */}
               <div className="mb-4">
                 <div className="text-sm font-medium text-gray-500 mb-1">Participants</div>
-                <div className="text-2xl font-bold text-white">{giveaway._count?.entries || 0}</div>
+                <div className="text-2xl font-bold text-gray-800">{giveaway._count?.entries || 0}</div>
               </div>
               
               <div className="mb-4">
@@ -293,11 +293,11 @@ export default function GiveawayPublicPage() {
                 <div className="space-y-1">
                   <div className="flex items-center text-sm">
                     <span className="text-gray-600 font-medium w-16">Début:</span> 
-                    <span className="text-white">{formatDate(giveaway.startDate)}</span>
+                    <span className="text-gray-800">{formatDate(giveaway.startDate)}</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <span className="text-gray-600 font-medium w-16">Fin:</span> 
-                    <span className="text-white">{formatDate(giveaway.endDate)}</span>
+                    <span className="text-gray-800">{formatDate(giveaway.endDate)}</span>
                   </div>
                 </div>
               </div>
