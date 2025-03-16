@@ -41,7 +41,7 @@ model Receipt {
   product        Product?       @relation(fields: [productId], references: [id])
   productId      String?
   discordMessageId String?
-  metadata       String?        // Pour stocker les données JSON des produits multiples
+  metadata       String?  @db.Text  // Pour stocker les données JSON des produits multiples
 }
 
 model Product {
