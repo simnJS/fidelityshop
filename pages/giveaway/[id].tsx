@@ -246,7 +246,7 @@ export default function GiveawayPublicPage() {
                     </div>
                   </div>
                 ) : giveaway.customPrize ? (
-                  <div className="text-lg">{giveaway.customPrize}</div>
+                  <div className="text-lg text-gray-800">{giveaway.customPrize}</div>
                 ) : (
                   <div className="text-gray-500">Aucun prix spécifié</div>
                 )}
