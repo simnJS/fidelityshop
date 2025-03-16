@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 import path from 'path';
 import fs from 'fs';
 import { sendMultiProductReceiptNotification } from '../discord/webhook';
@@ -57,21 +58,34 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Ajouter des headers CORS pour permettre les requêtes entre domaines avec cookies
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+  // Gérer les requêtes OPTIONS (preflight)
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
 
-  const token = await getToken({ req });
+  // @ts-ignore - Ignorer l'erreur de type pour authOptions
+  const session = await getServerSession(req, res, authOptions);
 
-  if (!token) {
+  if (!session) {
     return res.status(401).json({ message: 'Non autorisé' });
   }
 
-  if (!token.sub) {
+  const userId = session.user.id;
+
+  if (!userId) {
     return res.status(400).json({ message: 'ID utilisateur manquant dans la session' });
   }
-
-  const userId = token.sub;
 
   try {
     // Créer un dossier temporaire si nécessaire

@@ -17,7 +17,7 @@ export default function TestImagesPage() {
         setLoading(false);
         
         // Quelques exemples d'URLs pour tester
-        const baseUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
+        const baseUrl = process.env.NEXT_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : '');
         const sampleImages = [
           '/uploads/1742120774309-full-blanc.png',
           '/uploads/1742122944460-bleu_blanc_dÃ©gradÃ©_1.png'
@@ -101,7 +101,7 @@ export default function TestImagesPage() {
         ) : (
           <div className="space-y-6">
             {images.map((image, index) => {
-              const fullUrl = image.startsWith('http') ? image : `${window.location.origin}${image}`;
+              const fullUrl = image.startsWith('http') ? image : `${typeof window !== 'undefined' ? window.location.origin : ''}${image}`;
               
               return (
                 <div key={index} className="border border-gray-700 rounded-lg p-4">

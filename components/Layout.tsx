@@ -55,12 +55,12 @@ export default function Layout({ children }: LayoutProps) {
         }
       });
       
-      // Rediriger vers la page de connexion avec un paramètre force pour assurer la déconnexion
-      window.location.href = '/login?force=true';
+      // Rediriger vers la page de connexion avec un paramètre from pour indiquer la source
+      window.location.href = '/login?from=signout';
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
       // En cas d'erreur, forcer une redirection vers la page de connexion
-      window.location.href = '/login?force=true&error=signout';
+      window.location.href = '/login?from=signout&error=true';
     }
   };
 

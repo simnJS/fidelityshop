@@ -137,6 +137,12 @@ const Leaderboard: React.FC = () => {
     }
   };
 
+  const handleRefresh = () => {
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  };
+
   return (
     <>
       <Head>
@@ -218,7 +224,7 @@ const Leaderboard: React.FC = () => {
                   <div className="bg-red-900/20 p-4 rounded-lg max-w-md mx-auto">
                     <p className="text-red-400 mb-4">{error}</p>
                     <button 
-                      onClick={() => window.location.reload()} 
+                      onClick={handleRefresh} 
                       className="btn btn-primary"
                     >
                       Réessayer

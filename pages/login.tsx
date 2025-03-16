@@ -14,31 +14,29 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Déconnecter l'utilisateur au chargement de la page login si nécessaire
+  // Déconnecter l'utilisateur uniquement lorsqu'il vient explicitement de se déconnecter
   useEffect(() => {
-    // Si l'utilisateur vient d'être redirigé après une déconnexion, ne pas le déconnecter à nouveau
-    if (router.query.callbackUrl && router.query.callbackUrl.includes('signout')) {
-      return;
-    }
-    
-    const logout = async () => {
-      if (status === 'authenticated') {
-        console.log('Déconnexion préventive sur la page login');
-        await signOut({ redirect: false });
-        // Effacer les cookies manuellement si nécessaire
-        document.cookie.split(';').forEach(cookie => {
-          const [name] = cookie.split('=').map(c => c.trim());
-          if (name.includes('next-auth')) {
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
-          }
-        });
-      }
-    };
-    
-    if (router.query.force === 'true' || router.query.error) {
+    // Ne déconnecter l'utilisateur que s'il vient d'une action de déconnexion 
+    // identifiée par ?from=signout dans l'URL
+    if (router.query.from === 'signout') {
+      const logout = async () => {
+        if (status === 'authenticated') {
+          console.log('Déconnexion suite à action utilisateur');
+          await signOut({ redirect: false });
+          
+          // Effacer les cookies manuellement si nécessaire
+          document.cookie.split(';').forEach(cookie => {
+            const [name] = cookie.split('=').map(c => c.trim());
+            if (name.includes('next-auth')) {
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+            }
+          });
+        }
+      };
+      
       logout();
     }
-  }, [router.query, status]);
+  }, [router.query.from, status]);
 
   useEffect(() => {
     if (router.query.registered === 'true') {
@@ -47,11 +45,12 @@ export default function Login() {
   }, [router.query.registered]);
 
   useEffect(() => {
-    // Ne pas rediriger automatiquement si l'utilisateur est sur la page de connexion
-    if (status === 'authenticated' && !router.query.force) {
+    // Ne rediriger vers le dashboard que si l'utilisateur est authentifié
+    // et s'il ne vient pas d'une tentative de déconnexion
+    if (status === 'authenticated' && !router.query.from) {
       router.push('/dashboard');
     }
-  }, [status, router]);
+  }, [status, router, router.query.from]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
