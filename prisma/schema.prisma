@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  username       String         @unique
+  password       String
+  points         Int            @default(0)
+  minecraftName  String?
+  discordId      String?
+  isAdmin        Boolean        @default(false)
+  purchases      Purchase[]
+  receipts       Receipt[]
+  orders         Order[]
+  pointTransactions PointTransaction[]
+}
+
+model Receipt {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  imageUrl       String
+  status         String         @default("pending") // pending, approved, rejected
+  pointsAwarded  Int?
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+  product        Product?       @relation(fields: [productId], references: [id])
+  productId      String?
+  discordMessageId String?
+  metadata       String?        // Pour stocker les données JSON des produits multiples
+}
+
+model Product {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  name           String
+  description    String
+  imageUrl       String?
+  pointsCost     Int
+  inStock        Boolean        @default(true)
+  isReward       Boolean        @default(false)  // true: produit pour la boutique, false: produit pour la fidélité
+  purchases      Purchase[]
+  orders         Order[]
+  receipts       Receipt[]
+}
+
+model Purchase {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+  product        Product        @relation(fields: [productId], references: [id])
+  productId      String
+  quantity       Int            @default(1)
+  totalPoints    Int
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  status         String         @default("pending") // pending, processing, completed
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+  product        Product        @relation(fields: [productId], references: [id])
+  productId      String
+  quantity       Int            @default(1)
+  totalPoints    Int
+  discordMessageId String?
+}
+
+model PointTransaction {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+  points         Int            // Nombre de points ajoutés/retirés
+  type           String         // ADMIN_ADD, RECEIPT_REWARD, ORDER_SPEND, etc.
+  reason         String?        // Raison de la transaction
+  adminId        String?        // ID de l'administrateur qui a effectué la transaction (si applicable)
+  metadata       String?        // Données supplémentaires au format JSON si nécessaire
+}
