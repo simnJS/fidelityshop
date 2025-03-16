@@ -27,6 +27,10 @@ interface Giveaway {
   _count?: {
     entries: number;
   };
+  winner?: {
+    id: string;
+    username: string;
+  };
 }
 
 interface GiveawayEntry {
@@ -48,6 +52,7 @@ export default function GiveawayDetailsPage() {
   const [entries, setEntries] = useState<GiveawayEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', content: '' });
+  const [winner, setWinner] = useState<{id: string, username: string} | null>(null);
 
   // Configurer un intercepteur Axios pour ajouter les en-têtes d'authentification
   useEffect(() => {
@@ -78,6 +83,19 @@ export default function GiveawayDetailsPage() {
       fetchEntries();
     }
   }, [status, id, router]);
+
+  useEffect(() => {
+    // Si le giveaway a un gagnant, récupérer ses informations
+    if (giveaway?.winnerId && entries.length > 0) {
+      const winnerEntry = entries.find(entry => entry.userId === giveaway.winnerId);
+      if (winnerEntry) {
+        setWinner({
+          id: winnerEntry.userId,
+          username: winnerEntry.user.username
+        });
+      }
+    }
+  }, [giveaway, entries]);
 
   const fetchGiveaway = async () => {
     try {
@@ -168,8 +186,17 @@ export default function GiveawayDetailsPage() {
             )}
             
             <div className="md:w-2/3">
-              <h2 className="text-xl font-bold mb-2">{giveaway.title}</h2>
-              <div className="mb-4 text-gray-500">Statut: <span className={`font-semibold ${giveaway.status === 'active' ? 'text-green-600' : giveaway.status === 'completed' ? 'text-blue-600' : 'text-red-600'}`}>{giveaway.status}</span></div>
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-bold">{giveaway.title}</h2>
+                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  giveaway.status === 'active' ? 'bg-green-100 text-green-800' :
+                  giveaway.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {giveaway.status === 'active' ? 'Actif' : 
+                   giveaway.status === 'completed' ? 'Terminé' : 'Annulé'}
+                </div>
+              </div>
               
               <div className="mb-4">
                 <h3 className="font-semibold mb-1">Description:</h3>
@@ -178,29 +205,57 @@ export default function GiveawayDetailsPage() {
               
               <div className="mb-4">
                 <h3 className="font-semibold mb-1">Période:</h3>
-                <p>Du {formatDate(giveaway.startDate)} au {formatDate(giveaway.endDate)}</p>
+                <div className="flex flex-col sm:flex-row sm:space-x-6">
+                  <div className="flex items-center bg-gray-50 px-3 py-2 rounded-md mb-2 sm:mb-0">
+                    <span className="text-gray-600 font-medium mr-2">Début:</span>
+                    <span className="text-black">{formatDate(giveaway.startDate)}</span>
+                  </div>
+                  <div className="flex items-center bg-gray-50 px-3 py-2 rounded-md">
+                    <span className="text-gray-600 font-medium mr-2">Fin:</span>
+                    <span className="text-black">{formatDate(giveaway.endDate)}</span>
+                  </div>
+                </div>
               </div>
               
               <div className="mb-4">
                 <h3 className="font-semibold mb-1">Prix:</h3>
-                {giveaway.product ? (
-                  <p>Produit: {giveaway.product.name} (valeur: {giveaway.product.pointsCost} points)</p>
-                ) : giveaway.customPrize ? (
-                  <p>{giveaway.customPrize}</p>
-                ) : (
-                  <p>Aucun prix spécifié</p>
-                )}
+                <div className="bg-gray-50 px-3 py-2 rounded-md">
+                  {giveaway.product ? (
+                    <div className="flex items-center">
+                      <span className="text-black font-medium">{giveaway.product.name}</span>
+                      <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium">
+                        {giveaway.product.pointsCost} points
+                      </span>
+                    </div>
+                  ) : giveaway.customPrize ? (
+                    <p className="text-black">{giveaway.customPrize}</p>
+                  ) : (
+                    <p className="text-gray-500">Aucun prix spécifié</p>
+                  )}
+                </div>
               </div>
               
               <div className="mb-4">
                 <h3 className="font-semibold mb-1">Participants:</h3>
-                <p>{giveaway._count?.entries || 0} participant(s)</p>
+                <div className="bg-gray-50 px-3 py-2 rounded-md">
+                  <span className="text-black font-medium">{giveaway._count?.entries || 0}</span> participant(s)
+                </div>
               </div>
               
               {giveaway.winnerId ? (
                 <div className="mb-4">
                   <h3 className="font-semibold mb-1">Gagnant:</h3>
-                  <p>{giveaway.winnerId}</p>
+                  <div className="bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-md flex items-center">
+                    <div className="bg-yellow-100 rounded-full p-2 mr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="font-bold text-black block">{giveaway.winner?.username || 'Utilisateur introuvable'}</span>
+                      <span className="text-xs text-gray-500">ID: {giveaway.winnerId}</span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <button
@@ -225,13 +280,29 @@ export default function GiveawayDetailsPage() {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilisateur</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de participation</th>
+                    {giveaway.winnerId && (
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {entries.map((entry) => (
-                    <tr key={entry.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">{entry.user.username}</td>
+                    <tr key={entry.id} className={entry.userId === giveaway.winnerId ? "bg-yellow-50" : ""}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={entry.userId === giveaway.winnerId ? "font-bold text-yellow-700" : ""}>
+                          {entry.user.username}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">{formatDate(entry.createdAt)}</td>
+                      {giveaway.winnerId && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {entry.userId === giveaway.winnerId ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Gagnant 🏆
+                            </span>
+                          ) : null}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -29,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       // Récupérer tous les giveaways
       try {
+        // D'abord récupérer tous les giveaways
         const giveaways = await prisma.giveaway.findMany({
           include: {
             product: {
@@ -48,7 +49,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           },
         });
 
-        return res.status(200).json(giveaways);
+        // Récupérer les informations de tous les utilisateurs gagnants
+        const winnerIds = giveaways
+          .filter(g => g.winnerId)
+          .map(g => g.winnerId as string);
+
+        // Si aucun gagnant, retourner les giveaways tels quels
+        if (winnerIds.length === 0) {
+          return res.status(200).json(giveaways);
+        }
+
+        // Récupérer les utilisateurs correspondant aux gagnants
+        const winners = await prisma.user.findMany({
+          where: {
+            id: {
+              in: winnerIds
+            }
+          },
+          select: {
+            id: true,
+            username: true
+          }
+        });
+
+        // Associer les gagnants à leurs giveaways respectifs
+        const giveawaysWithWinners = giveaways.map(giveaway => {
+          if (!giveaway.winnerId) return giveaway;
+          
+          const winner = winners.find(w => w.id === giveaway.winnerId);
+          return {
+            ...giveaway,
+            winner: winner || null
+          };
+        });
+
+        return res.status(200).json(giveawaysWithWinners);
       } catch (error) {
         console.error('Erreur lors de la récupération des giveaways:', error);
         return res.status(500).json({ error: 'Erreur serveur', details: (error as Error).message });

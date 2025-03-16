@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
-import { FaGift, FaTrophy, FaTimes, FaCheck } from 'react-icons/fa';
-import Layout from '../../components/Layout';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 // Interface pour les giveaways
 interface Giveaway {
@@ -16,319 +16,336 @@ interface Giveaway {
   startDate: string;
   endDate: string;
   status: string;
+  productId?: string;
+  customPrize?: string;
+  winnerId?: string;
   product?: {
     id: string;
     name: string;
     imageUrl?: string;
     pointsCost: number;
   };
-  customPrize?: string;
   _count?: {
     entries: number;
   };
-  hasEntered?: boolean;
+  winner?: {
+    id: string;
+    username: string;
+  };
 }
 
-export default function GiveawayPage() {
+export default function GiveawayPublicPage() {
   const router = useRouter();
   const { id } = router.query;
   const { data: session, status } = useSession();
   const [giveaway, setGiveaway] = useState<Giveaway | null>(null);
   const [loading, setLoading] = useState(true);
-  const [participating, setParticipating] = useState(false);
-  const [message, setMessage] = useState({ type: '', content: '' });
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [error, setError] = useState('');
+  const [hasEntered, setHasEntered] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
-  // Vérifier l'authentification
+  // Récupérer le giveaway
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
+    if (id) {
+      fetchGiveaway();
     }
-  }, [status, router]);
+  }, [id]);
 
-  // Récupérer les données du giveaway
+  // Effet pour vérifier si l'utilisateur a déjà participé
   useEffect(() => {
-    const fetchGiveaway = async () => {
-      if (!id || !session) return;
-      
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/giveaway/${id}`);
-        setGiveaway(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Erreur lors de la récupération du giveaway:', error);
-        setMessage({ type: 'error', content: 'Ce giveaway n\'existe pas ou a été supprimé.' });
-        setLoading(false);
-      }
-    };
+    if (giveaway && session?.user?.id) {
+      checkIfUserEntered();
+    }
+  }, [giveaway, session]);
 
-    fetchGiveaway();
-  }, [id, session]);
-
-  // Calculer le temps restant
+  // Effet pour mettre à jour le temps restant
   useEffect(() => {
-    if (!giveaway) return;
+    if (giveaway && giveaway.status === 'active') {
+      const timer = setInterval(() => {
+        const end = new Date(giveaway.endDate).getTime();
+        const now = new Date().getTime();
+        const distance = end - now;
 
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const endTime = new Date(giveaway.endDate).getTime();
-      const distance = endTime - now;
+        if (distance < 0) {
+          clearInterval(timer);
+          setTimeLeft('Terminé');
+          // Rafraîchir le giveaway pour voir si un gagnant a été sélectionné
+          fetchGiveaway();
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      if (distance < 0) {
-        clearInterval(timer);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
+          setTimeLeft(`${days}j ${hours}h ${minutes}m ${seconds}s`);
+        }
+      }, 1000);
 
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(timer);
+      return () => clearInterval(timer);
+    }
   }, [giveaway]);
 
-  // Gérer la participation
-  const handleParticipate = async () => {
-    if (!session || !giveaway) return;
+  const fetchGiveaway = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/giveaways/${id}`);
+      setGiveaway(response.data);
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération du giveaway:', error);
+      setError('Impossible de charger le giveaway');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkIfUserEntered = async () => {
+    try {
+      const response = await axios.get(`/api/giveaways/${id}/check-entry`);
+      setHasEntered(response.data.hasEntered);
+    } catch (error) {
+      console.error('Erreur lors de la vérification de la participation:', error);
+    }
+  };
+
+  const handleEnterGiveaway = async () => {
+    if (!session) {
+      router.push(`/login?redirect=/giveaway/${id}`);
+      return;
+    }
 
     try {
-      setParticipating(true);
-      await axios.post(`/api/giveaway/${id}/participate`);
-      setMessage({ type: 'success', content: 'Vous participez maintenant à ce giveaway!' });
-      
-      // Mettre à jour l'état local
-      setGiveaway({
-        ...giveaway,
-        hasEntered: true,
-        _count: {
-          entries: (giveaway._count?.entries || 0) + 1
-        }
-      });
+      setIsEntering(true);
+      await axios.post(`/api/giveaways/${id}/enter`);
+      setHasEntered(true);
+      fetchGiveaway(); // Rafraîchir pour mettre à jour le nombre de participants
     } catch (error: any) {
-      console.error('Erreur lors de la participation:', error);
-      setMessage({ 
-        type: 'error', 
-        content: error.response?.data?.error || 'Une erreur est survenue lors de votre participation.'
-      });
+      console.error('Erreur lors de la participation au giveaway:', error);
+      alert(`Erreur: ${error.response?.data?.error || 'Une erreur est survenue'}`);
     } finally {
-      setParticipating(false);
+      setIsEntering(false);
     }
+  };
+
+  // Fonction pour formater les dates
+  const formatDate = (dateStr: string) => {
+    return format(new Date(dateStr), "d MMMM yyyy 'à' HH:mm", { locale: fr });
   };
 
   if (loading) {
     return (
-      <>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      </>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
     );
   }
 
-  if (!giveaway) {
+  if (error || !giveaway) {
     return (
-      <>
-        <div className="min-h-screen flex flex-col items-center justify-center px-4">
-          <FaTimes className="text-5xl text-red-500 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Giveaway non trouvé</h1>
-          <p className="text-gray-600 mb-6">
-            Ce giveaway n'existe pas ou a été supprimé.
-          </p>
-          <button
-            onClick={() => router.push('/')}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition duration-300"
-          >
-            Retour à l'accueil
-          </button>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <h1 className="text-2xl font-bold text-red-700 mb-4">Giveaway non trouvé</h1>
+          <p className="text-red-600 mb-6">Le giveaway demandé n'existe pas ou a été supprimé.</p>
+          <Link href="/giveaways" className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+            Voir tous les giveaways
+          </Link>
         </div>
-      </>
+      </div>
     );
   }
 
-  // Vérifier si le giveaway est terminé
-  const isEnded = new Date(giveaway.endDate) < new Date();
+  const isActive = giveaway.status === 'active';
+  const isCompleted = giveaway.status === 'completed';
+  const isCancelled = giveaway.status === 'cancelled';
 
   return (
-    <Layout>
+    <>
       <Head>
-        <title>{giveaway.title} - Giveaway</title>
-        <meta name="description" content={giveaway.description} />
+        <title>{giveaway.title} | Concours</title>
+        <meta name="description" content={giveaway.description.substring(0, 160)} />
+        {giveaway.imageUrl && <meta property="og:image" content={giveaway.imageUrl} />}
       </Head>
 
-      <div className="container mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
-        >
-          {/* En-tête avec image */}
-          <div className="relative">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* En-tête du giveaway */}
+        <div className="relative mb-8">
+          {/* Bannière d'état */}
+          <div className={`absolute top-0 right-0 py-2 px-4 rounded-bl-lg z-10 text-sm font-bold ${
+            isActive ? 'bg-green-500 text-white' : 
+            isCompleted ? 'bg-blue-500 text-white' : 
+            'bg-gray-500 text-white'
+          }`}>
+            {isActive ? 'En cours' : isCompleted ? 'Terminé' : 'Annulé'}
+          </div>
+          
+          {/* Image principale avec overlay pour les giveaways terminés */}
+          <div className="relative rounded-lg overflow-hidden shadow-lg">
             {giveaway.imageUrl ? (
-              <div className="h-64 overflow-hidden">
-                <img
-                  src={giveaway.imageUrl}
-                  alt={giveaway.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <img 
+                src={giveaway.imageUrl} 
+                alt={giveaway.title} 
+                className="w-full h-64 object-cover"
+              />
             ) : (
-              <div className="h-64 bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-                <FaGift className="text-7xl text-white" />
+              <div className="w-full h-64 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+            )}
+            
+            {/* Overlay pour les giveaways terminés avec le gagnant */}
+            {isCompleted && giveaway.winnerId && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
+                <div className="text-center bg-black bg-opacity-70 p-6 rounded-lg">
+                  <div className="mb-2 text-yellow-300 text-lg font-bold uppercase">Gagnant</div>
+                  <div className="text-3xl font-bold mb-2">{giveaway.winner?.username}</div>
+                  <div className="animate-pulse flex space-x-1 text-yellow-300 text-xl">
+                    <span>🏆</span><span>🏆</span><span>🏆</span>
+                  </div>
+                </div>
               </div>
             )}
             
-            {/* Badge du nombre de participants */}
-            <div className="absolute top-4 right-4 bg-blue-600 text-white font-semibold px-4 py-2 rounded-full">
-              {giveaway._count?.entries || 0} participants
-            </div>
-          </div>
-
-          {/* Contenu */}
-          <div className="p-6 md:p-8">
-            {/* Message de notification */}
-            {message.content && (
-              <div className={`p-4 mb-6 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {message.type === 'success' ? <FaCheck className="inline mr-2" /> : <FaTimes className="inline mr-2" />}
-                {message.content}
+            {/* Overlay pour les giveaways annulés */}
+            {isCancelled && (
+              <div className="absolute inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center">
+                <div className="text-center p-6">
+                  <div className="text-white text-2xl font-bold">Concours Annulé</div>
+                </div>
               </div>
             )}
+          </div>
+        </div>
 
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">{giveaway.title}</h1>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Infos principales */}
+          <div className="lg:col-span-2">
+            <h1 className="text-3xl font-bold mb-4">{giveaway.title}</h1>
             
             <div className="mb-6">
-              {isEnded ? (
-                <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg mb-4">
-                  Ce giveaway est terminé.
-                </div>
-              ) : (
-                <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                  <h3 className="font-semibold text-gray-700 mb-2">Temps restant:</h3>
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    <div className="bg-white p-2 rounded shadow">
-                      <div className="text-2xl font-bold text-blue-600">{timeLeft.days}</div>
-                      <div className="text-xs text-gray-500">Jours</div>
-                    </div>
-                    <div className="bg-white p-2 rounded shadow">
-                      <div className="text-2xl font-bold text-blue-600">{timeLeft.hours}</div>
-                      <div className="text-xs text-gray-500">Heures</div>
-                    </div>
-                    <div className="bg-white p-2 rounded shadow">
-                      <div className="text-2xl font-bold text-blue-600">{timeLeft.minutes}</div>
-                      <div className="text-xs text-gray-500">Minutes</div>
-                    </div>
-                    <div className="bg-white p-2 rounded shadow">
-                      <div className="text-2xl font-bold text-blue-600">{timeLeft.seconds}</div>
-                      <div className="text-xs text-gray-500">Secondes</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="prose max-w-none mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Description</h2>
-              <p className="text-gray-700 whitespace-pre-line">{giveaway.description}</p>
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-lg mb-8">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <FaTrophy className="text-yellow-500 mr-2" /> 
-                Prix à gagner
-              </h2>
-              
-              {giveaway.product ? (
-                <div className="flex items-center">
-                  {giveaway.product.imageUrl && (
-                    <div className="mr-4">
-                      <img 
-                        src={giveaway.product.imageUrl} 
-                        alt={giveaway.product.name}
-                        className="w-20 h-20 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-semibold text-lg text-gray-800">{giveaway.product.name}</h3>
-                    <p className="text-gray-600">Valeur: {giveaway.product.pointsCost} points</p>
-                  </div>
-                </div>
-              ) : giveaway.customPrize ? (
-                <div className="text-gray-700 bg-white p-4 rounded-lg border border-gray-200">
-                  {giveaway.customPrize}
-                </div>
-              ) : (
-                <p className="text-gray-500">Le prix sera dévoilé ultérieurement.</p>
-              )}
-            </div>
-
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Dates importantes</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Début du giveaway:</p>
-                  <p className="font-medium">{new Date(giveaway.startDate).toLocaleDateString('fr-FR', { 
-                    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                  })}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Fin du giveaway:</p>
-                  <p className="font-medium">{new Date(giveaway.endDate).toLocaleDateString('fr-FR', { 
-                    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-                  })}</p>
-                </div>
+              <h2 className="text-xl font-semibold mb-2">Description</h2>
+              <div className="bg-white p-4 rounded-lg shadow whitespace-pre-line">
+                {giveaway.description}
               </div>
             </div>
-
-            {/* Bouton de participation */}
-            <div className="flex justify-center">
-              {isEnded ? (
-                <button
-                  disabled
-                  className="bg-gray-400 text-white px-8 py-3 rounded-lg text-lg font-semibold cursor-not-allowed"
+            
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Prix</h2>
+              <div className="bg-white p-4 rounded-lg shadow">
+                {giveaway.product ? (
+                  <div className="flex items-center">
+                    {giveaway.product.imageUrl && (
+                      <img 
+                        src={giveaway.product.imageUrl} 
+                        alt={giveaway.product.name} 
+                        className="w-16 h-16 object-cover rounded-md mr-4"
+                      />
+                    )}
+                    <div>
+                      <div className="font-medium text-lg">{giveaway.product.name}</div>
+                      <div className="inline-block bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-sm font-medium mt-1">
+                        {giveaway.product.pointsCost} points
+                      </div>
+                    </div>
+                  </div>
+                ) : giveaway.customPrize ? (
+                  <div className="text-lg">{giveaway.customPrize}</div>
+                ) : (
+                  <div className="text-gray-500">Aucun prix spécifié</div>
+                )}
+              </div>
+            </div>
+            
+            {/* Affichage du gagnant (pour les appareils mobiles) */}
+            {isCompleted && giveaway.winnerId && (
+              <div className="mb-6 lg:hidden">
+                <h2 className="text-xl font-semibold mb-2">Gagnant</h2>
+                <div className="bg-yellow-50 border-2 border-yellow-200 p-5 rounded-lg flex flex-col items-center">
+                  <div className="text-yellow-800 text-lg uppercase font-bold mb-1">Félicitations</div>
+                  <div className="text-2xl font-bold mb-2">{giveaway.winner?.username}</div>
+                  <div className="text-yellow-600">
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Sidebar - Infos complémentaires */}
+          <div>
+            {/* Carte d'action */}
+            <div className="bg-white rounded-lg shadow p-6 mb-4">
+              {/* Compteur pour les giveaways actifs */}
+              {isActive && (
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-gray-500 mb-1">Temps restant</div>
+                  <div className="bg-indigo-100 text-indigo-800 text-xl font-bold p-3 rounded-md text-center">
+                    {timeLeft}
+                  </div>
+                </div>
+              )}
+              
+              {/* Stats du concours */}
+              <div className="mb-4">
+                <div className="text-sm font-medium text-gray-500 mb-1">Participants</div>
+                <div className="text-2xl font-bold">{giveaway._count?.entries || 0}</div>
+              </div>
+              
+              <div className="mb-4">
+                <div className="text-sm font-medium text-gray-500 mb-1">Dates</div>
+                <div className="space-y-1">
+                  <div className="flex items-center text-sm">
+                    <span className="text-gray-600 font-medium w-16">Début:</span> 
+                    <span>{formatDate(giveaway.startDate)}</span>
+                  </div>
+                  <div className="flex items-center text-sm">
+                    <span className="text-gray-600 font-medium w-16">Fin:</span> 
+                    <span>{formatDate(giveaway.endDate)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bouton de participation */}
+              {isActive && !hasEntered && !giveaway.winnerId && (
+                <button 
+                  onClick={handleEnterGiveaway}
+                  disabled={isEntering || !session}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow-md transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  Giveaway terminé
+                  {isEntering ? 'Inscription...' : 'Participer au concours'}
                 </button>
-              ) : giveaway.hasEntered ? (
-                <button
-                  disabled
-                  className="bg-green-500 text-white px-8 py-3 rounded-lg text-lg font-semibold flex items-center"
-                >
-                  <FaCheck className="mr-2" /> Vous participez
-                </button>
-              ) : (
-                <motion.button
-                  onClick={handleParticipate}
-                  disabled={participating}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold flex items-center"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {participating ? (
-                    <>
-                      <div className="mr-2 h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                      En cours...
-                    </>
-                  ) : (
-                    <>
-                      <FaGift className="mr-2" /> Participer au giveaway
-                    </>
-                  )}
-                </motion.button>
+              )}
+              
+              {/* Message si déjà participé */}
+              {isActive && hasEntered && (
+                <div className="bg-green-50 text-green-800 p-3 rounded-md border border-green-200 text-center mb-4">
+                  Vous participez à ce concours 🎉
+                </div>
+              )}
+              
+              {/* Affichage du gagnant (pour les grands écrans) */}
+              {isCompleted && giveaway.winnerId && (
+                <div className="hidden lg:block mt-6">
+                  <div className="text-sm font-medium text-gray-500 mb-1">Gagnant</div>
+                  <div className="bg-yellow-50 border-2 border-yellow-200 p-5 rounded-lg flex flex-col items-center">
+                    <div className="text-yellow-800 text-lg uppercase font-bold mb-1">Félicitations</div>
+                    <div className="text-2xl font-bold mb-2">{giveaway.winner?.username}</div>
+                    <div className="text-yellow-600">
+                      <span className="text-2xl">🏆</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Bouton pour les non connectés */}
+              {isActive && !session && (
+                <div className="mt-2 text-center">
+                  <Link href={`/login?redirect=/giveaway/${id}`} className="text-indigo-600 hover:text-indigo-800">
+                    Connectez-vous pour participer
+                  </Link>
+                </div>
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </Layout>
+    </>
   );
 } 

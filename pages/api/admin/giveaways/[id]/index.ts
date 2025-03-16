@@ -56,7 +56,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(404).json({ error: 'Giveaway non trouvé' });
         }
 
-        return res.status(200).json(giveaway);
+        // Si il y a un gagnant, récupérer ses informations d'utilisateur
+        let winner = null;
+        if (giveaway.winnerId) {
+          const winnerEntry = await prisma.giveawayEntry.findFirst({
+            where: { 
+              giveawayId: id,
+              userId: giveaway.winnerId 
+            },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true
+                }
+              }
+            }
+          });
+
+          if (winnerEntry) {
+            winner = {
+              id: winnerEntry.userId,
+              username: winnerEntry.user.username
+            };
+          }
+        }
+        
+        return res.status(200).json({
+          ...giveaway,
+          winner
+        });
       } catch (error) {
         console.error('Erreur lors de la récupération du giveaway:', error);
         return res.status(500).json({ error: 'Erreur serveur', details: (error as Error).message });

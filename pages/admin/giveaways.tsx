@@ -26,6 +26,10 @@ interface Giveaway {
   _count?: {
     entries: number;
   };
+  winner?: {
+    id: string;
+    username: string;
+  };
 }
 
 interface Product {
@@ -483,6 +487,7 @@ export default function AdminGiveawaysPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Prix</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Statut</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Participants</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Gagnant</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -536,6 +541,13 @@ export default function AdminGiveawaysPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                         {giveaway._count?.entries || 0} participants
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        {giveaway.winnerId ? (
+                          <span className="text-yellow-400 font-medium">{giveaway.winner?.username || 'Non spécifié'}</span>
+                        ) : (
+                          <span className="text-gray-500">--</span>
+                        )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex space-x-3 justify-end">
