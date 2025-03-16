@@ -145,7 +145,7 @@ export default function Dashboard() {
       });
       setMessage({ 
         type: 'success', 
-        content: 'Votre preuve d\'achat a été envoyée avec succès. Notre équipe la vérifiera bientôt.' 
+        content: 'Votre preuve de vente a été envoyée avec succès. Notre équipe la vérifiera bientôt.' 
       });
       setFile(null);
       setSelectedProductId('');
@@ -159,7 +159,7 @@ export default function Dashboard() {
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        content: 'Une erreur est survenue lors de l\'envoi de votre preuve d\'achat.' 
+        content: 'Une erreur est survenue lors de l\'envoi de votre preuve de vente.' 
       });
     } finally {
       setUploadLoading(false);
@@ -196,9 +196,9 @@ export default function Dashboard() {
 
       {/* Actions rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {/* Télécharger une preuve d'achat */}
+        {/* Télécharger une preuve de vente */}
         <div className="bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-blue-400 mb-4">Envoyer une preuve d'achat</h2>
+          <h2 className="text-xl font-semibold text-blue-400 mb-4">Envoyer une preuve de vente</h2>
           
           {message.content && (
             <div className={`p-3 mb-4 rounded ${
@@ -211,13 +211,13 @@ export default function Dashboard() {
           )}
           
           <p className="text-gray-300 mb-4">
-            Sélectionnez vos produits achetés et téléchargez une preuve d'achat pour recevoir des points.
+            Sélectionnez vos produits achetés et téléchargez une preuve de vente pour recevoir des points.
           </p>
           <Link 
             href="/purchase" 
             className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Nouvelle preuve d'achat
+            Nouvelle preuve de vente
           </Link>
         </div>
 
@@ -260,9 +260,9 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Historique des preuves d'achat */}
+      {/* Historique des preuves de vente */}
       <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold text-blue-400 mb-4">Historique des preuves d'achat</h2>
+        <h2 className="text-xl font-semibold text-blue-400 mb-4">Historique des preuves de vente</h2>
         
         {Array.isArray(receipts) && receipts.length > 0 ? (
           <div className="overflow-x-auto">
@@ -315,7 +315,7 @@ export default function Dashboard() {
             </table>
           </div>
         ) : (
-          <p className="text-gray-300">Vous n'avez pas encore envoyé de preuve d'achat.</p>
+          <p className="text-gray-300">Vous n'avez pas encore envoyé de preuve de vente.</p>
         )}
       </div>
 

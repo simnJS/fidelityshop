@@ -49,7 +49,7 @@ export default function Home() {
     <>
       <Head>
         <title>SimnShop | Système de Points de Fidélité Minecraft</title>
-        <meta name="description" content="Gagnez des points en effectuant des achats et échangez-les contre des récompenses exclusives sur notre serveur Minecraft !" />
+        <meta name="description" content="Gagnez des points en effectuant des ventes et échangez-les contre des récompenses exclusives sur notre serveur Minecraft !" />
       </Head>
 
       <div className="flex flex-col items-center">
@@ -86,7 +86,7 @@ export default function Home() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              Gagnez des points en effectuant des achats et échangez-les contre des récompenses exclusives !
+              Gagnez des points en effectuant des ventes et échangez-les contre des récompenses exclusives !
             </motion.p>
             
             <motion.div 
@@ -156,8 +156,8 @@ export default function Home() {
               <motion.div variants={itemVariants}>
                 <FeatureCard 
                   icon={<FaCamera className="text-blue-500" />}
-                  title="Envoyez vos preuves d'achat"
-                  description="Téléchargez simplement une capture d'écran de votre achat pour recevoir des points."
+                  title="Envoyez vos preuves de vente"
+                  description="Téléchargez simplement une capture d'écran de votre vente pour recevoir des points."
                 />
               </motion.div>
               

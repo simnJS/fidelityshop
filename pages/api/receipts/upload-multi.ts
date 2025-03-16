@@ -205,11 +205,11 @@ export default async function handler(
     }
 
     return res.status(201).json({
-      message: 'Preuve d\'achat téléchargée avec succès',
+      message: 'Preuve de vente téléchargée avec succès',
       receipt,
     });
   } catch (error) {
-    console.error('Erreur lors du téléchargement de la preuve d\'achat:', error);
+    console.error('Erreur lors du téléchargement de la preuve de vente:', error);
     return res.status(500).json({ message: 'Erreur du serveur' });
   }
 } 

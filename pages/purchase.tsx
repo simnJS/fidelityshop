@@ -96,7 +96,7 @@ export default function PurchasePage() {
     }
 
     if (!file) {
-      setMessage({ type: 'error', content: 'Veuillez sélectionner une image comme preuve d\'achat' });
+      setMessage({ type: 'error', content: 'Veuillez sélectionner une image comme preuve de vente' });
       return;
     }
 
@@ -118,7 +118,7 @@ export default function PurchasePage() {
       });
       setMessage({ 
         type: 'success', 
-        content: 'Votre preuve d\'achat a été envoyée avec succès. Notre équipe la vérifiera bientôt.' 
+        content: 'Votre preuve de vente a été envoyée avec succès. Notre équipe la vérifiera bientôt.' 
       });
       setFile(null);
       setCart([]);
@@ -131,7 +131,7 @@ export default function PurchasePage() {
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        content: 'Une erreur est survenue lors de l\'envoi de votre preuve d\'achat.' 
+        content: 'Une erreur est survenue lors de l\'envoi de votre preuve de vente.' 
       });
     } finally {
       setUploadLoading(false);
@@ -246,15 +246,15 @@ export default function PurchasePage() {
               onClick={() => setShowUploadSection(true)}
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Envoyer une preuve d'achat
+              Envoyer une preuve de vente
             </button>
           ) : (
             <div className="mt-6 border-t border-gray-700 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Téléchargez votre preuve d'achat</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Téléchargez votre preuve de vente</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-gray-300 mb-2">
-                    Sélectionnez une capture d'écran de votre achat
+                    Sélectionnez une capture d'écran de votre vente
                   </label>
                   <input
                     type="file"
@@ -273,7 +273,7 @@ export default function PurchasePage() {
                     disabled={uploadLoading || !file}
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
                   >
-                    {uploadLoading ? 'Envoi en cours...' : 'Envoyer la preuve d\'achat'}
+                    {uploadLoading ? 'Envoi en cours...' : 'Envoyer la preuve de vente'}
                   </button>
                   <button
                     type="button"

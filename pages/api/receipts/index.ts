@@ -27,7 +27,7 @@ export default async function handler(
   try {
     const userId = token.id as string;
 
-    // Si l'utilisateur est admin, il peut voir toutes les preuves d'achat
+    // Si l'utilisateur est admin, il peut voir toutes les preuves de vente
     if (token.isAdmin && req.query.all === 'true') {
       const receipts = await prisma.receipt.findMany({
         orderBy: { createdAt: 'desc' },
@@ -43,7 +43,7 @@ export default async function handler(
       return res.status(200).json(receipts);
     }
 
-    // Sinon, l'utilisateur ne voit que ses propres preuves d'achat
+    // Sinon, l'utilisateur ne voit que ses propres preuves de vente
     const receipts = await prisma.receipt.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' }
@@ -51,7 +51,7 @@ export default async function handler(
 
     return res.status(200).json(receipts);
   } catch (error) {
-    console.error('Erreur lors de la récupération des preuves d\'achat:', error);
+    console.error('Erreur lors de la récupération des preuves de vente:', error);
     return res.status(500).json({ message: 'Erreur du serveur' });
   }
 } 

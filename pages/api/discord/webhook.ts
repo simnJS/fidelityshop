@@ -38,7 +38,7 @@ interface SelectedProduct {
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
 
-// Fonction pour envoyer une notification de preuve d'achat à Discord
+// Fonction pour envoyer une notification de preuve de vente à Discord
 export async function sendReceiptNotification(receipt: Receipt) {
   if (!DISCORD_TOKEN || !DISCORD_CHANNEL_ID) {
     console.error('Les variables d\'environnement Discord ne sont pas configurées');
@@ -67,9 +67,9 @@ export async function sendReceiptNotification(receipt: Receipt) {
 
     // Créer l'embed
     const embed = new EmbedBuilder()
-      .setTitle('📝 Nouvelle preuve d\'achat')
+      .setTitle('📝 Nouvelle preuve de vente')
       .setColor('#0099ff')
-      .setDescription(`Un utilisateur a envoyé une nouvelle preuve d'achat.\n\n**Lien de l'image:** [Voir en plein écran](${imageUrl})`)
+      .setDescription(`Un utilisateur a envoyé une nouvelle preuve de vente.\n\n**Lien de l'image:** [Voir en plein écran](${imageUrl})`)
       .addFields(
         { name: '👤 Utilisateur', value: user.username, inline: true },
         { name: '🎮 Nom Minecraft', value: user.minecraftName || 'Non défini', inline: true },
@@ -77,7 +77,7 @@ export async function sendReceiptNotification(receipt: Receipt) {
         { name: '🔢 ID du reçu', value: receipt.id, inline: false }
       )
       .setImage(imageUrl)
-      .setFooter({ text: 'SimnShop - Système de preuves d\'achat' })
+      .setFooter({ text: 'SimnShop - Système de preuves de vente' })
       .setTimestamp();
 
     // Créer les boutons
@@ -104,7 +104,7 @@ export async function sendReceiptNotification(receipt: Receipt) {
     
     // Envoyer d'abord l'image brute pour qu'elle soit facilement visible
     await textChannel.send({
-      content: `**🖼️ PREUVE D'ACHAT - ${user.username}**\n${imageUrl}`
+      content: `**🖼️ PREUVE de vente - ${user.username}**\n${imageUrl}`
     });
     
     // Puis envoyer l'embed avec les boutons
@@ -126,7 +126,7 @@ export async function sendReceiptNotification(receipt: Receipt) {
   }
 }
 
-// Fonction pour envoyer une notification de preuve d'achat avec plusieurs produits
+// Fonction pour envoyer une notification de preuve de vente avec plusieurs produits
 export async function sendMultiProductReceiptNotification(
   receipt: Receipt, 
   products: SelectedProduct[], 
@@ -169,9 +169,9 @@ export async function sendMultiProductReceiptNotification(
 
     // Créer l'embed
     const embed = new EmbedBuilder()
-      .setTitle('📝 Nouvelle preuve d\'achat multi-produits')
+      .setTitle('📝 Nouvelle preuve de vente multi-produits')
       .setColor('#ff9900')
-      .setDescription(`Un utilisateur a envoyé une preuve d'achat pour plusieurs produits.\n\n**Lien de l'image:** [Voir en plein écran](${imageUrl})`)
+      .setDescription(`Un utilisateur a envoyé une preuve de vente pour plusieurs produits.\n\n**Lien de l'image:** [Voir en plein écran](${imageUrl})`)
       .addFields(
         { name: '👤 Utilisateur', value: user.username, inline: true },
         { name: '🎮 Nom Minecraft', value: user.minecraftName || 'Non défini', inline: true },
@@ -181,7 +181,7 @@ export async function sendMultiProductReceiptNotification(
         { name: '🔢 ID du reçu', value: receipt.id, inline: true }
       )
       .setImage(imageUrl)
-      .setFooter({ text: 'SimnShop - Système de preuves d\'achat' })
+      .setFooter({ text: 'SimnShop - Système de preuves de vente' })
       .setTimestamp();
 
     // Créer les boutons
@@ -212,7 +212,7 @@ export async function sendMultiProductReceiptNotification(
     
     // Envoyer d'abord l'image brute pour qu'elle soit facilement visible
     await textChannel.send({
-      content: `**🖼️ PREUVE D'ACHAT MULTI-PRODUITS - ${user.username}**\n${imageUrl}`
+      content: `**🖼️ PREUVE de vente MULTI-PRODUITS - ${user.username}**\n${imageUrl}`
     });
     
     // Puis envoyer l'embed avec les boutons
