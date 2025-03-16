@@ -79,6 +79,8 @@ const UsersAdmin: React.FC = () => {
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'warning' } | null>(null);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isAddPointsModalOpen, setIsAddPointsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     // Rediriger si l'utilisateur n'est pas connecté ou n'est pas un administrateur
@@ -244,6 +246,42 @@ const UsersAdmin: React.FC = () => {
     fetchUsers(); // Rafraîchir la liste pour voir les modifications éventuelles
   };
 
+  const deleteUser = async () => {
+    if (!userToDelete) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/users/${userToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression de l\'utilisateur');
+      }
+
+      const data = await response.json();
+      setMessage({ text: data.message || 'Utilisateur supprimé avec succès', type: 'success' });
+      
+      // Si on était en train de voir les détails de l'utilisateur, revenir à la liste
+      if (selectedUser && selectedUser.id === userToDelete) {
+        setViewMode('list');
+        setSelectedUser(null);
+      }
+      
+      // Rafraîchir la liste des utilisateurs
+      fetchUsers();
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
+    } catch (err: any) {
+      setMessage({ text: err.message || 'Une erreur est survenue', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (status === 'loading') {
     return (
       <AdminLayout>
@@ -368,13 +406,25 @@ const UsersAdmin: React.FC = () => {
                           ) : '-'}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => fetchUserDetails(user.id)}
-                            className="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors"
-                            title="Voir les détails"
-                          >
-                            <FaUserEdit size={16} />
-                          </button>
+                          <div className="flex justify-center space-x-2">
+                            <button
+                              onClick={() => fetchUserDetails(user.id)}
+                              className="bg-yellow-500 text-white p-2 rounded-full hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors"
+                              title="Voir les détails"
+                            >
+                              <FaUserEdit size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setUserToDelete(user.id);
+                                setIsDeleteModalOpen(true);
+                              }}
+                              className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                              title="Supprimer l'utilisateur"
+                            >
+                              <FaExclamationTriangle size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -475,6 +525,15 @@ const UsersAdmin: React.FC = () => {
                     className="bg-green-500 text-white px-5 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
                   >
                     <FaCoins /> Ajouter des Points
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUserToDelete(selectedUser.id);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    className="bg-red-500 text-white px-5 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                  >
+                    <FaExclamationTriangle /> Supprimer l'Utilisateur
                   </button>
                 </div>
               </div>
@@ -664,6 +723,50 @@ const UsersAdmin: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de suppression d'utilisateur */}
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-gray-900 border-b pb-3">Confirmer la suppression</h3>
+              <div className="mb-6">
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <FaExclamationTriangle className="h-5 w-5 text-yellow-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-yellow-700">
+                        Attention ! Cette action est irréversible. Toutes les données associées à cet utilisateur (commandes, reçus, etc.) seront également supprimées.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-700">Êtes-vous sûr de vouloir supprimer définitivement cet utilisateur ?</p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setUserToDelete(null);
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteUser}
+                  className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                  disabled={loading}
+                >
+                  {loading ? "Suppression..." : "Supprimer définitivement"}
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -132,6 +132,30 @@ export default async function handler(
     }
   }
 
+  // DELETE - Supprimer un utilisateur
+  else if (req.method === 'DELETE') {
+    try {
+      // Vérifier que l'utilisateur existe
+      const existingUser = await prisma.user.findUnique({
+        where: { id }
+      });
+
+      if (!existingUser) {
+        return res.status(404).json({ message: 'Utilisateur non trouvé' });
+      }
+
+      // Supprimer l'utilisateur
+      await prisma.user.delete({
+        where: { id }
+      });
+
+      return res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+      return res.status(500).json({ message: 'Erreur du serveur' });
+    }
+  }
+
   // Méthode non supportée
   else {
     return res.status(405).json({ message: 'Méthode non autorisée' });
