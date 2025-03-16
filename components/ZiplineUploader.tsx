@@ -7,8 +7,8 @@ interface ZiplineUploaderProps {
   className?: string;
 }
 
-const CDN_UPLOAD_URL = 'https://cdn.simnjs.fr/api/upload';
-const CDN_AUTH_TOKEN = 'MTc0MjEzODIyMzM5Mw==.ODQ2NjI0NDhiMzRkNmI4MzQwOTI2MTBkNzE1NjI0NWEuMzIwOGNmODY0Y2E2NTE3ZWJmZDJhZWQ0N2QxNmQ3MmRlZDc3YjQ0MWMwNTA2NmE4ZmU4YWI3ZGI1Mjc5ZGVjOWM5ODI4ZTZiZDU3YmRmNDJiMjUxNmYxMjM3MmFlYzlkZGUxYTQzMWRkY2Y3NGQ3NmMwZjJmODUyYmRjNmZmYzdkYzNjYzVhNzE1NTI0YTU5MWY3ZTVlNDMwNzdhMGQxOQ==';
+// Utiliser notre API proxy au lieu du CDN directement
+const PROXY_UPLOAD_URL = '/api/cdn/proxy-upload';
 
 export default function ZiplineUploader({ onUploadComplete, className = '' }: ZiplineUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -27,10 +27,9 @@ export default function ZiplineUploader({ onUploadComplete, className = '' }: Zi
     formData.append('file', file);
 
     try {
-      const response = await axios.post(CDN_UPLOAD_URL, formData, {
+      const response = await axios.post(PROXY_UPLOAD_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': CDN_AUTH_TOKEN
         }
       });
 
