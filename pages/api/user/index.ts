@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,33 +20,31 @@ export default async function handler(
   }
 
   try {
-    console.log('API user - Début de la requête, vérification du token');
+    console.log('API user - Début de la requête, vérification de la session');
     
     // Debug - Afficher les cookies reçus
     console.log('Cookies reçus:', req.cookies);
     
-    const token = await getToken({ req });
+    // @ts-ignore - Ignorer l'erreur de type pour authOptions
+    const session = await getServerSession(req, res, authOptions);
     
-    console.log('Token obtenu:', token ? 'Token présent' : 'Token absent', 
-               token?.sub ? `sub: ${String(token.sub).substring(0, 5)}...` : 'pas de sub', 
-               token?.id ? `id: ${String(token.id).substring(0, 5)}...` : 'pas de id');
+    console.log('Session obtenue:', session ? 'Session présente' : 'Session absente',
+               session?.user?.id ? `user.id: ${String(session.user.id).substring(0, 5)}...` : 'pas de user.id');
                
-    if (!token) {
-      console.log('API user - Pas de token JWT, retour 401');
+    if (!session) {
+      console.log('API user - Pas de session, retour 401');
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
     try {
-      // Essayer d'abord de récupérer l'ID via token.sub (standard JWT)
-      // Si non disponible, utiliser token.id (backcompat)
-      const userId = token.sub || token.id as string;
+      const userId = session.user.id as string;
       
       if (!userId) {
-        console.error('Pas d\'ID utilisateur dans le token:', token);
-        return res.status(401).json({ message: 'Token invalide - pas d\'ID utilisateur' });
+        console.error('Pas d\'ID utilisateur dans la session:', session);
+        return res.status(401).json({ message: 'Session invalide - pas d\'ID utilisateur' });
       }
       
-      console.log('API user - Token valide, recherche utilisateur avec ID:', String(userId).substring(0, 5) + '...');
+      console.log('API user - Session valide, recherche utilisateur avec ID:', String(userId).substring(0, 5) + '...');
       
       const user = await prisma.user.findUnique({
         where: { id: userId },
