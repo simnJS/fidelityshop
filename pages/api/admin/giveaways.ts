@@ -1,24 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
 import { prisma } from '../../../lib/prisma';
+import { getToken } from 'next-auth/jwt';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Récupérer la session
-    const session = await getSession({ req });
+    // Récupérer le token JWT directement depuis la requête
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     // Vérifier que l'utilisateur est authentifié
-    if (!session || !session.user) {
-      console.log('Non authentifié:', session);
+    if (!token || !token.id) {
+      console.log('Non authentifié via JWT:', token);
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    // Récupérer l'ID utilisateur
-    const userId = session.user.id;
-    if (!userId) {
-      console.log('ID utilisateur manquant:', session.user);
-      return res.status(401).json({ error: 'Session utilisateur invalide' });
-    }
+    // Récupérer l'ID utilisateur du token
+    const userId = token.id as string;
 
     // Vérifier que l'utilisateur est administrateur
     const user = await prisma.user.findUnique({
@@ -55,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json(giveaways);
       } catch (error) {
         console.error('Erreur lors de la récupération des giveaways:', error);
-        return res.status(500).json({ error: 'Erreur serveur' });
+        return res.status(500).json({ error: 'Erreur serveur', details: (error as Error).message });
       }
     } else if (req.method === 'POST') {
       // Créer un nouveau giveaway

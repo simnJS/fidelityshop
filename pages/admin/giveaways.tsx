@@ -61,6 +61,27 @@ export default function AdminGiveawaysPage() {
   const [availableImages, setAvailableImages] = useState<string[]>([]);
   const [selectedPrizeType, setSelectedPrizeType] = useState<'product' | 'custom'>('product');
 
+  // Configurer un intercepteur Axios pour ajouter les en-têtes d'authentification
+  useEffect(() => {
+    if (status === 'authenticated') {
+      // Configurer l'intercepteur Axios
+      const requestInterceptor = axios.interceptors.request.use(
+        (config) => {
+          // Ajouter l'en-tête d'authentification à toutes les requêtes
+          config.headers = config.headers || {};
+          config.headers['x-api-csrf'] = true; // Aider NextAuth à détecter une requête CSRF valide
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+
+      // Nettoyer l'intercepteur lors du démontage du composant
+      return () => {
+        axios.interceptors.request.eject(requestInterceptor);
+      };
+    }
+  }, [status]);
+
   // Vérifier l'authentification
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -76,7 +97,7 @@ export default function AdminGiveawaysPage() {
   const fetchGiveaways = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/admin/giveaways', { withCredentials: true });
+      const response = await axios.get('/api/admin/giveaways');
       setGiveaways(response.data);
       setLoading(false);
     } catch (error: any) {
@@ -89,7 +110,7 @@ export default function AdminGiveawaysPage() {
   // Récupérer les produits pour les prix
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/admin/products', { withCredentials: true });
+      const response = await axios.get('/api/admin/products');
       setProducts(response.data);
     } catch (error: any) {
       console.error('Erreur lors de la récupération des produits:', error);
@@ -100,7 +121,7 @@ export default function AdminGiveawaysPage() {
   // Récupérer les images disponibles
   const fetchAvailableImages = async () => {
     try {
-      const response = await axios.get('/api/admin/cdn-images', { withCredentials: true });
+      const response = await axios.get('/api/admin/cdn-images');
       setAvailableImages(response.data);
     } catch (error: any) {
       console.error('Erreur lors de la récupération des images:', error);
@@ -157,21 +178,13 @@ export default function AdminGiveawaysPage() {
         customPrize: selectedPrizeType === 'custom' ? formData.customPrize : null
       };
       
-      // Configurer axios pour inclure les cookies dans les requêtes
-      const config = {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      };
-      
       if (formMode === 'create') {
         // Créer un nouveau giveaway
-        await axios.post('/api/admin/giveaways', payload, config);
+        const response = await axios.post('/api/admin/giveaways', payload);
         setMessage({ type: 'success', content: 'Giveaway créé avec succès!' });
       } else if (editingGiveaway) {
         // Mettre à jour un giveaway existant
-        await axios.put(`/api/admin/giveaways/${editingGiveaway.id}`, payload, config);
+        const response = await axios.put(`/api/admin/giveaways/${editingGiveaway.id}`, payload);
         setMessage({ type: 'success', content: 'Giveaway mis à jour avec succès!' });
       }
       
@@ -193,9 +206,9 @@ export default function AdminGiveawaysPage() {
         setMessage({ type: 'success', content: 'Giveaway supprimé avec succès!' });
         setGiveaways(giveaways.filter(g => g.id !== giveawayId));
         setLoading(false);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Erreur lors de la suppression du giveaway:', error);
-        setMessage({ type: 'error', content: 'Impossible de supprimer le giveaway' });
+        setMessage({ type: 'error', content: 'Impossible de supprimer le giveaway: ' + (error.response?.data?.error || error.message) });
         setLoading(false);
       }
     }
@@ -208,9 +221,9 @@ export default function AdminGiveawaysPage() {
         const response = await axios.post(`/api/admin/giveaways/${giveawayId}/pick-winner`);
         setMessage({ type: 'success', content: `Gagnant sélectionné: ${response.data.winnerUsername}` });
         fetchGiveaways();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Erreur lors de la sélection du gagnant:', error);
-        setMessage({ type: 'error', content: 'Impossible de sélectionner un gagnant' });
+        setMessage({ type: 'error', content: 'Impossible de sélectionner un gagnant: ' + (error.response?.data?.error || error.message) });
       } finally {
         setLoading(false);
       }

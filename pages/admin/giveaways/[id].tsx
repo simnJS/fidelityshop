@@ -49,6 +49,27 @@ export default function GiveawayDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', content: '' });
 
+  // Configurer un intercepteur Axios pour ajouter les en-têtes d'authentification
+  useEffect(() => {
+    if (status === 'authenticated') {
+      // Configurer l'intercepteur Axios
+      const requestInterceptor = axios.interceptors.request.use(
+        (config) => {
+          // Ajouter l'en-tête d'authentification à toutes les requêtes
+          config.headers = config.headers || {};
+          config.headers['x-api-csrf'] = true; // Aider NextAuth à détecter une requête CSRF valide
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+
+      // Nettoyer l'intercepteur lors du démontage du composant
+      return () => {
+        axios.interceptors.request.eject(requestInterceptor);
+      };
+    }
+  }, [status]);
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
@@ -61,7 +82,7 @@ export default function GiveawayDetailsPage() {
   const fetchGiveaway = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/admin/giveaways/${id}`, { withCredentials: true });
+      const response = await axios.get(`/api/admin/giveaways/${id}`);
       setGiveaway(response.data);
       setLoading(false);
     } catch (error: any) {
@@ -73,7 +94,7 @@ export default function GiveawayDetailsPage() {
 
   const fetchEntries = async () => {
     try {
-      const response = await axios.get(`/api/admin/giveaways/${id}/entries`, { withCredentials: true });
+      const response = await axios.get(`/api/admin/giveaways/${id}/entries`);
       setEntries(response.data);
     } catch (error: any) {
       console.error('Erreur lors de la récupération des participations:', error);
@@ -84,7 +105,7 @@ export default function GiveawayDetailsPage() {
   const handlePickWinner = async () => {
     try {
       setLoading(true);
-      const response = await axios.post(`/api/admin/giveaways/${id}/pick-winner`, {}, { withCredentials: true });
+      const response = await axios.post(`/api/admin/giveaways/${id}/pick-winner`);
       setMessage({ type: 'success', content: `Le gagnant a été sélectionné: ${response.data.winnerUsername}` });
       fetchGiveaway();
     } catch (error: any) {

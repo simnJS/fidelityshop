@@ -1,22 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../../../lib/prisma';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Récupérer la session
-    const session = await getSession({ req });
+    // Récupérer le token JWT directement depuis la requête
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     // Vérifier que l'utilisateur est authentifié
-    if (!session || !session.user) {
+    if (!token || !token.id) {
+      console.log('Non authentifié via JWT:', token);
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    // Récupérer l'ID utilisateur
-    const userId = session.user.id as string;
-    if (!userId) {
-      return res.status(401).json({ error: 'Session utilisateur invalide' });
-    }
+    // Récupérer l'ID utilisateur du token
+    const userId = token.id as string;
 
     // Vérifier que l'utilisateur est administrateur
     const user = await prisma.user.findUnique({
@@ -24,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!user?.isAdmin) {
+      console.log('Non administrateur:', user);
       return res.status(403).json({ error: 'Accès interdit - vous devez être administrateur' });
     }
 
