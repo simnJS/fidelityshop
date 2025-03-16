@@ -8,6 +8,13 @@ import { useEffect, useState } from 'react';
 // Configuration globale d'axios
 axios.defaults.withCredentials = true;
 
+// Initialiser axios avec des valeurs par défaut pour les headers
+axios.interceptors.request.use(function (config) {
+  // Ajouter des en-têtes CORS pour toutes les requêtes
+  config.headers['X-Requested-With'] = 'XMLHttpRequest';
+  return config;
+});
+
 // Composant pour vérifier la connexion Discord
 function DiscordConnectionChecker({ children }: { children: React.ReactNode }) {
   const [isDiscordConnected, setIsDiscordConnected] = useState<boolean | null>(null);
@@ -82,7 +89,11 @@ export default function App({
     Component.name === 'Register';
 
   return (
-    <SessionProvider session={session}>
+    <SessionProvider 
+      session={session}
+      refetchInterval={5 * 60} // Actualiser la session toutes les 5 minutes
+      refetchOnWindowFocus={true} // Actualiser quand l'utilisateur revient sur la page
+    >
       <DiscordConnectionChecker>
         {isAuthPage ? (
           <Component {...pageProps} />

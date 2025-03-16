@@ -40,18 +40,27 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('Tentative de connexion avec:', { username: formData.username });
+      
       const result = await signIn('credentials', {
         username: formData.username,
         password: formData.password,
-        redirect: false
+        redirect: false,
+        callbackUrl: '/dashboard'
       });
+
+      console.log('Résultat de la connexion:', result);
 
       if (result?.error) {
         setError('Nom d\'utilisateur ou mot de passe incorrect');
+      } else if (!result?.ok) {
+        setError('Une erreur est survenue lors de la connexion');
       } else {
-        router.push('/dashboard');
+        // Forcer un rafraîchissement complet pour s'assurer que les cookies sont bien définis
+        window.location.href = '/dashboard';
       }
     } catch (err) {
+      console.error('Erreur de connexion:', err);
       setError('Une erreur est survenue lors de la connexion');
     } finally {
       setLoading(false);

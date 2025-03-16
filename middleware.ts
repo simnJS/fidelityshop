@@ -3,27 +3,31 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
+  const response = NextResponse.next();
+  
+  // Ajouter des en-têtes CORS de base pour toutes les requêtes
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  
   // Vérifier si c'est une requête pour une image dans /uploads
   if (pathname.startsWith('/uploads/')) {
-    // Pas de redirection, mais s'assurer que les en-têtes CORS sont corrects
-    const response = NextResponse.next();
-    
-    // Ajouter les en-têtes CORS
+    // Ajouter les en-têtes CORS spécifiques aux images
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
     
     // Ajouter des en-têtes de cache pour les images
     response.headers.set('Cache-Control', 'public, max-age=86400'); // Cache d'un jour
-    
-    return response;
+  } 
+  // Pour les API, définir des en-têtes CORS plus permissifs
+  else if (pathname.startsWith('/api/')) {
+    response.headers.set('Access-Control-Allow-Origin', request.headers.get('Origin') || '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version');
   }
-
-  // Pour toutes les autres requêtes, continuer normalement
-  return NextResponse.next();
+  
+  return response;
 }
 
 export const config = {
-  matcher: ['/uploads/:path*'],
+  matcher: ['/uploads/:path*', '/api/:path*'],
 }; 

@@ -82,10 +82,23 @@ export const authOptions = {
         path: '/',
         secure: process.env.NODE_ENV === 'production'
       }
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
     }
   },
-  debug: process.env.NODE_ENV !== 'production',
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET || 'default-secret-key-change-in-production',
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET || 'default-secret-key-change-in-production',
+    maxAge: 30 * 24 * 60 * 60, // 30 jours
+  },
 };
 
 export default NextAuth(authOptions); 
