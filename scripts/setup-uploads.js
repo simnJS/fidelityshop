@@ -7,7 +7,7 @@ const { execSync } = require('child_process');
 // Chemins des dossiers nécessaires
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 const UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
-const TEMP_DIR = path.join(process.cwd(), 'tmp');
+const TEMP_DIR = '/tmp';
 
 // Chemins des dépendances requises
 const DEPENDENCIES = [
@@ -119,7 +119,6 @@ function updateGitignore() {
 // Exécution des fonctions
 ensureDirectoryExists(PUBLIC_DIR);
 ensureDirectoryExists(UPLOADS_DIR);
-ensureDirectoryExists(TEMP_DIR);
 checkDependencies();
 createGitKeep();
 updateGitignore();

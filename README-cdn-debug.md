@@ -4,6 +4,30 @@ Ce document fournit des informations pour diagnostiquer et résoudre les problè
 
 ## Problèmes courants
 
+### Erreur de permission EACCES lors de l'upload d'images
+
+Si vous rencontrez l'erreur "EACCES: permission denied, mkdir '/app/tmp'", cela signifie que l'application n'a pas les droits nécessaires pour créer le dossier temporaire dans l'environnement Docker.
+
+La solution incluse dans la dernière mise à jour utilise maintenant le dossier `/tmp` qui est accessible en écriture dans tous les environnements Docker standard. Si vous avez un environnement personnalisé où même `/tmp` n'est pas accessible, vous pouvez :
+
+1. Modifier votre Dockerfile pour inclure les commandes suivantes :
+   ```dockerfile
+   # Créer un dossier temporaire et donner les droits
+   RUN mkdir -p /app/tmp && chmod 777 /app/tmp
+   ```
+
+2. Ou modifier votre docker-compose.yml pour ajouter un volume temporaire :
+   ```yaml
+   volumes:
+     - tmp-volume:/app/tmp
+   
+   # Définir le volume
+   volumes:
+     tmp-volume:
+   ```
+
+Après ces modifications, redémarrez votre conteneur.
+
 ### Erreur 500 lors de l'upload d'images
 
 Si vous recevez une erreur 500 (Internal Server Error) lors de l'upload d'images via l'interface web, suivez ces étapes :

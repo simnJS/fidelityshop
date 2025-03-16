@@ -1,0 +1,17 @@
+# Patch pour docker-compose.yml
+# À utiliser avec: docker-compose -f docker-compose.yml -f docker-compose.patch.yml up -d
+
+services:
+  app:
+    volumes:
+      - app_data:/app/prisma
+      - app_uploads:/app/public/uploads
+      - app_tmp:/tmp  # Volume dédié pour les fichiers temporaires
+
+volumes:
+  app_data:
+    name: simnshop_data_${COMPOSE_PROJECT_NAME:-prod}
+  app_uploads:
+    name: simnshop_uploads_${COMPOSE_PROJECT_NAME:-prod}
+  app_tmp:
+    name: simnshop_tmp_${COMPOSE_PROJECT_NAME:-prod} 

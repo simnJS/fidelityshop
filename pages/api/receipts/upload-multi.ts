@@ -73,11 +73,9 @@ export default async function handler(
 
   try {
     // Créer un dossier temporaire si nécessaire
-    const tmpDir = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tmpDir)) {
-      fs.mkdirSync(tmpDir, { recursive: true });
-    }
-
+    const tmpDir = '/tmp';
+    // Aucun besoin de créer le dossier /tmp car il existe déjà dans les conteneurs Docker
+    
     // Utiliser formidable pour parser le formulaire
     const form = formidable({
       uploadDir: tmpDir,
