@@ -1,7 +1,7 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Installer les dépendances nécessaires pour Prisma
-RUN apk add --no-cache libc6-compat openssl1.1-compat
+RUN apk add --no-cache libc6-compat openssl
 
 # Créer l'application directory
 WORKDIR /app
@@ -34,6 +34,7 @@ USER nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Exposer le port
 EXPOSE 3000

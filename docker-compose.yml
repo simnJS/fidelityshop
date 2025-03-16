@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     container_name: simnshop_app_${COMPOSE_PROJECT_NAME:-prod}
@@ -22,4 +20,4 @@ services:
 
 volumes:
   sqlite_data:
-    name: simnshop_sqlite_data_${COMPOSE_PROJECT_NAME:-prod} 
+    name: simnshop_sqlite_data_${COMPOSE_PROJECT_NAME:-prod}
