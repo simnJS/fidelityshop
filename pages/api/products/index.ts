@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,28 +20,34 @@ export default async function handler(
   }
 
   try {
-    console.log('API products - Début de la requête, vérification du token');
+    console.log('API products - Début de la requête, vérification de la session');
     
     // Debug - Afficher les cookies reçus
     console.log('Cookies reçus:', req.cookies);
+    console.log('Headers reçus:', {
+      origin: req.headers.origin,
+      referer: req.headers.referer,
+      cookie: req.headers.cookie?.substring(0, 50) + '...' // Tronquer pour la lisibilité
+    });
     
-    // Récupérer le token JWT au lieu de la session
-    const token = await getToken({ req });
+    // @ts-ignore - Ignorer l'erreur de type pour authOptions
+    const session = await getServerSession(req, res, authOptions);
     
-    console.log('Token obtenu:', token ? 'Token présent' : 'Token absent', 
-               token?.sub ? `sub: ${String(token.sub).substring(0, 5)}...` : 'pas de sub', 
-               token?.id ? `id: ${String(token.id).substring(0, 5)}...` : 'pas de id');
+    console.log('Session obtenue:', session ? 'Session présente' : 'Session absente',
+               session?.user?.id ? `user.id: ${String(session.user.id).substring(0, 5)}...` : 'pas de user.id');
 
-    if (!token) {
-      console.log('API products - Pas de token JWT, retour 401');
+    if (!session) {
+      console.log('API products - Pas de session, retour 401');
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
     // GET - Récupérer tous les produits
     if (req.method === 'GET') {
       try {
+        console.log('API products - Traitement GET avec query:', req.query);
+        
         // Pour les administrateurs, possibilité de voir tous les produits (y compris inactifs)
-        if (token.isAdmin && req.query.all === 'true') {
+        if (session.user.isAdmin && req.query.all === 'true') {
           const products = await prisma.product.findMany({
             orderBy: { createdAt: 'desc' }
           });
@@ -71,7 +78,7 @@ export default async function handler(
 
     // POST - Ajouter un nouveau produit (admin seulement)
     else if (req.method === 'POST') {
-      if (!token.isAdmin) {
+      if (!session.user.isAdmin) {
         return res.status(403).json({ message: 'Accès refusé - Droits d\'administrateur requis' });
       }
 

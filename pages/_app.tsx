@@ -1,19 +1,71 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, useSession, signIn } from 'next-auth/react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 // Configuration globale d'axios
 axios.defaults.withCredentials = true;
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_URL || window.location.origin;
 
 // Initialiser axios avec des valeurs par défaut pour les headers
 axios.interceptors.request.use(function (config) {
-  // Ajouter des en-têtes CORS pour toutes les requêtes
+  // Ajouter des en-têtes pour toutes les requêtes
   config.headers['X-Requested-With'] = 'XMLHttpRequest';
+  
+  // Ajouter l'origine actuelle pour aider avec CORS
+  config.headers['Origin'] = window.location.origin;
+  
+  // S'assurer que withCredentials est toujours activé
+  config.withCredentials = true;
+  
+  console.log(`Axios: Requête ${config.method?.toUpperCase()} vers ${config.url}`, { withCredentials: config.withCredentials });
+  
   return config;
 });
+
+// Ajouter un intercepteur pour gérer automatiquement les erreurs d'authentification
+axios.interceptors.response.use(
+  response => {
+    return response;
+  },
+  error => {
+    // Log plus détaillé des erreurs d'authentification
+    if (error.response && error.response.status === 401) {
+      console.error('Erreur 401 Unauthorized:', { 
+        url: error.config.url,
+        method: error.config.method,
+        withCredentials: error.config.withCredentials,
+        headers: error.config.headers
+      });
+      
+      // Tentative de reconnexion automatique
+      if (error.config.url !== '/api/auth/session' && error.config.url !== '/api/auth/signin') {
+        console.log('Tentative de réauthentification automatique...');
+        signIn(); // Rediriger vers la page de connexion
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Composant de débogage de session
+function SessionDebugger() {
+  const { data: session, status } = useSession();
+  
+  useEffect(() => {
+    console.log('État de la session NextAuth:', { status, session });
+    if (status === 'authenticated') {
+      console.log('Utilisateur authentifié:', session?.user);
+    }
+    
+    // Vérifier l'état des cookies disponibles
+    console.log('Cookies disponibles:', document.cookie);
+  }, [session, status]);
+  
+  return null; // Ce composant ne rend rien visuellement
+}
 
 // Composant pour vérifier la connexion Discord
 function DiscordConnectionChecker({ children }: { children: React.ReactNode }) {
@@ -94,6 +146,7 @@ export default function App({
       refetchInterval={5 * 60} // Actualiser la session toutes les 5 minutes
       refetchOnWindowFocus={true} // Actualiser quand l'utilisateur revient sur la page
     >
+      <SessionDebugger />
       <DiscordConnectionChecker>
         {isAuthPage ? (
           <Component {...pageProps} />

@@ -13,6 +13,7 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
+          console.log('Auth: Identifiants manquants');
           return null;
         }
 
@@ -21,15 +22,18 @@ export const authOptions = {
         });
 
         if (!user) {
+          console.log(`Auth: Utilisateur '${credentials.username}' non trouvé`);
           return null;
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isPasswordValid) {
+          console.log(`Auth: Mot de passe invalide pour '${credentials.username}'`);
           return null;
         }
 
+        console.log(`Auth: Connexion réussie pour '${credentials.username}', ID: ${user.id.substring(0, 8)}...`);
         return {
           id: user.id,
           name: user.username,
@@ -46,6 +50,9 @@ export const authOptions = {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
         token.name = user.name;
+        console.log('JWT Callback: Token créé/mis à jour pour', user.name);
+      } else {
+        console.log('JWT Callback: Token existant utilisé');
       }
       return token;
     },
@@ -60,6 +67,9 @@ export const authOptions = {
         if (!session.user.email) {
           session.user.email = token.email || `${token.name}@example.com`;
         }
+        console.log('Session Callback: Session créée/mise à jour pour', session.user.name);
+      } else {
+        console.log('Session Callback: Pas de token disponible');
       }
       return session;
     }
@@ -80,7 +90,8 @@ export const authOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.simnjs.fr' : undefined
       }
     },
     callbackUrl: {
@@ -89,7 +100,8 @@ export const authOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production'
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.simnjs.fr' : undefined
       }
     }
   },
@@ -99,6 +111,17 @@ export const authOptions = {
     secret: process.env.NEXTAUTH_SECRET || 'default-secret-key-change-in-production',
     maxAge: 30 * 24 * 60 * 60, // 30 jours
   },
+  logger: {
+    error(code, metadata) {
+      console.error(`NextAuth Error [${code}]:`, metadata);
+    },
+    warn(code) {
+      console.warn(`NextAuth Warning [${code}]`);
+    },
+    debug(code, metadata) {
+      console.log(`NextAuth Debug [${code}]:`, metadata);
+    }
+  }
 };
 
 export default NextAuth(authOptions); 
