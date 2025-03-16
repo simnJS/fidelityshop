@@ -41,20 +41,32 @@ Get-Content $EnvFile | ForEach-Object {
 }
 [Environment]::SetEnvironmentVariable("COMPOSE_PROJECT_NAME", $ComposeProjectName)
 
+# Activer BuildKit pour des builds plus rapides
+[Environment]::SetEnvironmentVariable("DOCKER_BUILDKIT", "1")
+[Environment]::SetEnvironmentVariable("COMPOSE_DOCKER_CLI_BUILD", "1")
+
 # ------ Construction et déploiement ------
 Write-Info "Démarrage du déploiement..."
 
 # 1. Pull l'image de cache si elle existe
-Write-Info "Recherche d'une image cache..."
-docker pull $CacheImage 2>$null
+Write-Info "Tentative de récupération du cache précédent..."
+try {
+    docker pull $CacheImage
+} catch {
+    Write-Info "Pas de cache disponible, on construit à partir de zéro"
+}
 
-# 2. Build avec cache
-Write-Info "Construction de l'image Docker..."
+# 2. Build avec cache et BuildKit
+Write-Info "Construction de l'image Docker avec BuildKit..."
 docker-compose build --build-arg BUILDKIT_INLINE_CACHE=1
 
 # 3. Tagger l'image comme cache pour le prochain build
-Write-Info "Mise en cache de l'image pour de futures accélérations..."
-docker tag app:latest $CacheImage
+Write-Info "Sauvegarde du cache pour accélérer les builds futurs..."
+try {
+    docker tag app:latest $CacheImage
+} catch {
+    Write-Info "Avertissement: Impossible de tagger l'image"
+}
 
 # 4. Démarrer les conteneurs
 Write-Info "Démarrage des conteneurs..."

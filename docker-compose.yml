@@ -6,8 +6,11 @@ services:
       dockerfile: Dockerfile
       args:
         - NODE_ENV=production
+        - BUILDKIT_INLINE_CACHE=1
       cache_from:
         - app:cache
+      platforms:
+        - linux/amd64
     image: app:latest
     restart: always
     ports:
@@ -23,6 +26,11 @@ services:
       - DOMAIN=${DOMAIN:-localhost}
     volumes:
       - app_data:/app/prisma
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
       interval: 30s

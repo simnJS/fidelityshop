@@ -12,8 +12,11 @@ FROM base AS deps
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 
-# Utiliser --only=production pour ignorer les devDependencies
-RUN npm ci --only=production && \
+# Installer toutes les dépendances, y compris les devDependencies pour la phase de build
+RUN npm ci && \
+    # Installer spécifiquement les types manquants
+    npm install --save-dev @types/bcrypt eslint && \
+    # Générer le client Prisma
     npx prisma generate
 
 # Build de l'application

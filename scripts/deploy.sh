@@ -35,18 +35,24 @@ echo_info "Préparation du déploiement..."
 export $(grep -v '^#' "$ENV_FILE" | xargs)
 export COMPOSE_PROJECT_NAME
 
+# Activer BuildKit pour des builds plus rapides
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+
 # ------ Construction et déploiement ------
 echo_info "Démarrage du déploiement..."
 
 # 1. Pull l'image de cache si elle existe
-docker pull $CACHE_IMAGE || true
+echo_info "Tentative de récupération du cache précédent..."
+docker pull $CACHE_IMAGE || echo_info "Pas de cache disponible, on construit à partir de zéro"
 
-# 2. Build avec cache
+# 2. Build avec cache et BuildKit
 echo_info "Construction de l'image Docker..."
 docker-compose build --build-arg BUILDKIT_INLINE_CACHE=1
 
 # 3. Tagger l'image comme cache pour le prochain build
-docker tag app:latest $CACHE_IMAGE
+echo_info "Sauvegarde du cache pour accélérer les builds futurs..."
+docker tag app:latest $CACHE_IMAGE || echo_info "Avertissement: Impossible de tagger l'image"
 
 # 4. Démarrer les conteneurs
 echo_info "Démarrage des conteneurs..."
