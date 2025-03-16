@@ -5,22 +5,31 @@ import Layout from '../components/Layout';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
-// Configuration globale d'axios
+// Configuration de base d'axios
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_URL || window.location.origin;
+
+// Configuration qui nécessite window (uniquement côté client)
+if (typeof window !== 'undefined') {
+  axios.defaults.baseURL = process.env.NEXT_PUBLIC_URL || window.location.origin;
+}
 
 // Initialiser axios avec des valeurs par défaut pour les headers
 axios.interceptors.request.use(function (config) {
   // Ajouter des en-têtes pour toutes les requêtes
   config.headers['X-Requested-With'] = 'XMLHttpRequest';
   
-  // Ajouter l'origine actuelle pour aider avec CORS
-  config.headers['Origin'] = window.location.origin;
+  // Ajouter l'origine actuelle pour aider avec CORS - uniquement si window est disponible
+  if (typeof window !== 'undefined') {
+    config.headers['Origin'] = window.location.origin;
+  }
   
   // S'assurer que withCredentials est toujours activé
   config.withCredentials = true;
   
-  console.log(`Axios: Requête ${config.method?.toUpperCase()} vers ${config.url}`, { withCredentials: config.withCredentials });
+  // Log uniquement si window est disponible (côté client)
+  if (typeof window !== 'undefined') {
+    console.log(`Axios: Requête ${config.method?.toUpperCase()} vers ${config.url}`, { withCredentials: config.withCredentials });
+  }
   
   return config;
 });
@@ -31,8 +40,8 @@ axios.interceptors.response.use(
     return response;
   },
   error => {
-    // Log plus détaillé des erreurs d'authentification
-    if (error.response && error.response.status === 401) {
+    // Log plus détaillé des erreurs d'authentification - uniquement côté client
+    if (typeof window !== 'undefined' && error.response && error.response.status === 401) {
       console.error('Erreur 401 Unauthorized:', { 
         url: error.config.url,
         method: error.config.method,
