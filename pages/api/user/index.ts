@@ -18,14 +18,22 @@ export default async function handler(
     return;
   }
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req });
 
   if (!token) {
     return res.status(401).json({ message: 'Non autorisé' });
   }
 
   try {
-    const userId = token.id as string;
+    // Essayer d'abord de récupérer l'ID via token.sub (standard JWT)
+    // Si non disponible, utiliser token.id (backcompat)
+    const userId = token.sub || token.id as string;
+    
+    if (!userId) {
+      console.error('Pas d\'ID utilisateur dans le token:', token);
+      return res.status(401).json({ message: 'Token invalide - pas d\'ID utilisateur' });
+    }
+    
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {

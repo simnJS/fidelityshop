@@ -11,11 +11,16 @@ export default async function handler(
   }
 
   const token = await getToken({ req });
-  if (!token || !token.sub) {
+  if (!token) {
     return res.status(401).json({ error: 'Non authentifié' });
   }
 
-  const userId = token.sub;
+  // Utiliser token.sub (standard JWT) ou token.id (compatibilité)
+  const userId = token.sub || token.id as string;
+  if (!userId) {
+    return res.status(401).json({ error: 'Token invalide - pas d\'ID utilisateur' });
+  }
+
   const giveawayId = req.query.id as string;
 
   if (!giveawayId) {

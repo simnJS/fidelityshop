@@ -5,7 +5,7 @@ import { getToken } from 'next-auth/jwt';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Récupérer le token JWT directement depuis la requête
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({ req });
 
     // Vérifier que l'utilisateur est authentifié
     if (!token || !token.id) {

@@ -19,7 +19,7 @@ export default async function handler(
   }
 
   // Récupérer le token JWT au lieu de la session
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req });
 
   if (!token) {
     return res.status(401).json({ message: 'Non autorisé' });

@@ -33,6 +33,7 @@ export const authOptions = {
         return {
           id: user.id,
           name: user.username,
+          email: user.email || `${user.username}@example.com`,
           isAdmin: user.isAdmin
         };
       }
@@ -41,16 +42,24 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.sub = user.id;
         token.id = user.id;
         token.isAdmin = user.isAdmin;
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user = session.user || {};
-        session.user.id = token.id;
+        session.user.id = token.sub || token.id;
         session.user.isAdmin = token.isAdmin;
+        if (!session.user.name && token.name) {
+          session.user.name = token.name;
+        }
+        if (!session.user.email) {
+          session.user.email = token.email || `${token.name}@example.com`;
+        }
       }
       return session;
     }
