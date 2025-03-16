@@ -100,6 +100,7 @@ const UsersAdmin: React.FC = () => {
     setError(null);
 
     try {
+      console.log(`Fetching users: page=${currentPage}, search=${search}`);
       const response = await fetch(
         `/api/users?page=${currentPage}&limit=10&search=${search}`, 
         {
@@ -115,6 +116,7 @@ const UsersAdmin: React.FC = () => {
       }
 
       const data = await response.json();
+      console.log('Pagination data received:', data.pagination);
       setUsers(data.users);
       setPagination(data.pagination);
     } catch (err: any) {
@@ -441,10 +443,13 @@ const UsersAdmin: React.FC = () => {
                 </div>
                 <div className="flex space-x-3">
                   <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
+                    onClick={() => {
+                      console.log('Précédent clicked, current page:', currentPage);
+                      setCurrentPage((prev) => Math.max(1, prev - 1));
+                    }}
+                    disabled={pagination.page <= 1}
                     className={`px-5 py-2 rounded ${
-                      currentPage === 1
+                      pagination.page <= 1
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         : 'bg-yellow-500 text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-colors'
                     }`}
@@ -452,7 +457,10 @@ const UsersAdmin: React.FC = () => {
                     Précédent
                   </button>
                   <button
-                    onClick={() => setCurrentPage(currentPage + 1)}
+                    onClick={() => {
+                      console.log('Suivant clicked, current page:', currentPage);
+                      setCurrentPage((prev) => prev + 1);
+                    }}
                     disabled={!pagination.hasMore}
                     className={`px-5 py-2 rounded ${
                       !pagination.hasMore

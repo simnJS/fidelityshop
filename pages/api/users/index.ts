@@ -85,12 +85,25 @@ export default async function handler(
       const totalPages = Math.ceil(totalUsers / limitNum);
       
       return res.status(200).json({
-        users,
+        users: users.map(user => ({
+          id: user.id,
+          username: user.username,
+          points: user.points,
+          minecraftName: user.minecraftName,
+          discordId: user.discordId,
+          isAdmin: user.isAdmin,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          receiptsCount: user._count.receipts,
+          ordersCount: user._count.orders,
+          purchasesCount: user._count.purchases
+        })),
         pagination: {
+          total: totalUsers,
           page: pageNum,
           limit: limitNum,
-          totalUsers,
-          totalPages
+          totalPages,
+          hasMore: pageNum < totalPages
         }
       });
     } catch (error) {
