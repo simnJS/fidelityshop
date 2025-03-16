@@ -17,10 +17,7 @@ services:
       - DOMAIN=${DOMAIN:-localhost}
     volumes:
       - app_data:/app/prisma
-      - uploads_data:/app/public/uploads
 
 volumes:
   app_data:
     name: simnshop_data_${COMPOSE_PROJECT_NAME:-prod}
-  uploads_data:
-    name: simnshop_uploads_${COMPOSE_PROJECT_NAME:-prod}

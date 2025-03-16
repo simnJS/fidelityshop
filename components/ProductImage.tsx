@@ -32,12 +32,12 @@ export default function ProductImage({
     // Si l'URL est relative (commence par /), ajouter le domaine
     if (url.startsWith('/')) {
       // Utiliser l'URL du site définie dans les variables d'environnement ou la base actuelle
-      const baseUrl = process.env.NEXT_PUBLIC_URL || window.location.origin;
+      const baseUrl = process.env.NEXT_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : '');
       return `${baseUrl}${url}`;
     }
 
     // Si c'est juste un nom de fichier, supposer qu'il se trouve dans /uploads
-    return `${window.location.origin}/uploads/${url}`;
+    return `${typeof window !== 'undefined' ? window.location.origin : ''}/uploads/${url}`;
   };
 
   if (!imageUrl || error) {
@@ -58,7 +58,7 @@ export default function ProductImage({
         fill={true}
         className={className}
         onError={() => setError(true)}
-        unoptimized={!normalizedUrl.startsWith(window.location.origin)} // Désactiver l'optimisation pour les images externes
+        unoptimized // Toujours désactiver l'optimisation pour être compatible avec le CDN externe
       />
     </div>
   ) : (
@@ -69,7 +69,7 @@ export default function ProductImage({
       height={height}
       className={className}
       onError={() => setError(true)}
-      unoptimized={!normalizedUrl.startsWith(window.location.origin)} // Désactiver l'optimisation pour les images externes
+      unoptimized // Toujours désactiver l'optimisation pour être compatible avec le CDN externe
     />
   );
 } 

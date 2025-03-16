@@ -8,6 +8,7 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import ProductImage from '../../components/ProductImage';
+import ZiplineUploader from '../../components/ZiplineUploader';
 
 // Types pour notre application
 interface Product {
@@ -268,16 +269,18 @@ export default function AdminProductsPage() {
                 onChange={handleInputChange}
                 className="flex-1 px-4 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <button
-                type="button"
-                onClick={() => setShowImageSelector(true)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Galerie
-              </button>
-              <Link href="/admin/images" className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-green-500">
-                Upload
-              </Link>
+            </div>
+            <div className="mt-3">
+              <p className="text-sm text-gray-400 mb-2">Ou uploadez directement une image:</p>
+              <ZiplineUploader 
+                onUploadComplete={(url) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    imageUrl: url
+                  }));
+                }}
+                className="max-w-full"
+              />
             </div>
           </div>
           

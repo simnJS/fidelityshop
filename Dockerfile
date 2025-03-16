@@ -28,6 +28,11 @@ ENV NODE_ENV production
 # Ajouter un utilisateur non-root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# S'assurer que le dossier uploads existe et a les bonnes permissions
+RUN mkdir -p /app/public/uploads && \
+    chown -R nextjs:nodejs /app/public
+
 USER nextjs
 
 # Copier les fichiers nécessaires
@@ -43,5 +48,5 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# Démarrer l'application
+# Script de démarrage pour vérifier et créer les dossiers nécessaires
 CMD ["node", "server.js"] 

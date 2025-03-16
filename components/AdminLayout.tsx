@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { FaUsers, FaShoppingBag, FaReceipt, FaHome, FaSignOutAlt } from 'react-icons/fa';
+import { FaUsers, FaShoppingBag, FaReceipt, FaHome, FaSignOutAlt, FaImages } from 'react-icons/fa';
 import { signOut } from 'next-auth/react';
 
 interface AdminLayoutProps {
@@ -41,6 +41,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Link href="/admin/products" className={`flex items-center px-4 py-3 hover:bg-gray-800 transition-colors duration-200 ${isActive('/admin/products')}`}>
                 <FaShoppingBag className="mr-3 text-yellow-400" />
                 <span>Produits</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/cdn-images" className={`flex items-center px-4 py-3 hover:bg-gray-800 transition-colors duration-200 ${isActive('/admin/cdn-images')}`}>
+                <FaImages className="mr-3 text-yellow-400" />
+                <span>Images (CDN)</span>
               </Link>
             </li>
             <li>
