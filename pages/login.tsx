@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn, useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
@@ -14,6 +14,32 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  // Déconnecter l'utilisateur au chargement de la page login si nécessaire
+  useEffect(() => {
+    // Si l'utilisateur vient d'être redirigé après une déconnexion, ne pas le déconnecter à nouveau
+    if (router.query.callbackUrl && router.query.callbackUrl.includes('signout')) {
+      return;
+    }
+    
+    const logout = async () => {
+      if (status === 'authenticated') {
+        console.log('Déconnexion préventive sur la page login');
+        await signOut({ redirect: false });
+        // Effacer les cookies manuellement si nécessaire
+        document.cookie.split(';').forEach(cookie => {
+          const [name] = cookie.split('=').map(c => c.trim());
+          if (name.includes('next-auth')) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+          }
+        });
+      }
+    };
+    
+    if (router.query.force === 'true' || router.query.error) {
+      logout();
+    }
+  }, [router.query, status]);
+
   useEffect(() => {
     if (router.query.registered === 'true') {
       setShowSuccessMessage(true);
@@ -21,7 +47,8 @@ export default function Login() {
   }, [router.query.registered]);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    // Ne pas rediriger automatiquement si l'utilisateur est sur la page de connexion
+    if (status === 'authenticated' && !router.query.force) {
       router.push('/dashboard');
     }
   }, [status, router]);

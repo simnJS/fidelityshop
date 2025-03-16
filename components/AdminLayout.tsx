@@ -16,6 +16,36 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     return router.pathname === path ? 'bg-gray-800 font-bold border-l-4 border-yellow-400' : '';
   };
 
+  const handleSignOut = async () => {
+    try {
+      // Afficher un message pour informer l'utilisateur que la déconnexion est en cours
+      console.log('Déconnexion en cours...');
+      
+      // Essayer de se déconnecter via next-auth
+      const result = await signOut({ 
+        redirect: false
+      });
+      
+      console.log('Résultat de la déconnexion admin:', result);
+      
+      // Effacer manuellement les cookies liés à l'authentification
+      document.cookie.split(';').forEach(cookie => {
+        const [name] = cookie.split('=').map(c => c.trim());
+        if (name.includes('next-auth')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+          console.log(`Cookie effacé: ${name}`);
+        }
+      });
+      
+      // Rediriger vers la page de connexion avec un paramètre force pour assurer la déconnexion
+      window.location.href = '/login?force=true';
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // En cas d'erreur, forcer une redirection vers la page de connexion
+      window.location.href = '/login?force=true&error=signout';
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Barre latérale */}
@@ -64,7 +94,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </ul>
           <div className="absolute bottom-0 left-0 w-64 border-t border-gray-700 bg-gray-900">
             <button 
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={handleSignOut}
               className="flex items-center px-4 py-3 w-full text-left hover:bg-gray-800 text-gray-100 transition-colors duration-200"
             >
               <FaSignOutAlt className="mr-3 text-red-400" />

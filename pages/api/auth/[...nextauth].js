@@ -72,11 +72,27 @@ export const authOptions = {
         console.log('Session Callback: Pas de token disponible');
       }
       return session;
+    },
+    async signIn({ user, account, profile }) {
+      console.log('SignIn Callback: Connexion de', user.name);
+      return true;
+    },
+    async signOut({ session, token }) {
+      console.log('SignOut Callback: Déconnexion utilisateur', token?.name || 'inconnu');
+      return true;
+    }
+  },
+  events: {
+    async signOut(message) {
+      console.log('Événement signOut déclenché:', message);
+    },
+    async session(message) {
+      console.log('Événement session déclenché:', message);
     }
   },
   pages: {
     signIn: '/login',
-    signOut: '/',
+    signOut: '/login',
     error: '/login'
   },
   session: {
@@ -96,6 +112,16 @@ export const authOptions = {
     },
     callbackUrl: {
       name: `next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? '.simnjs.fr' : undefined
+      }
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',

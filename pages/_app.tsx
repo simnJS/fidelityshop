@@ -18,11 +18,6 @@ axios.interceptors.request.use(function (config) {
   // Ajouter des en-têtes pour toutes les requêtes
   config.headers['X-Requested-With'] = 'XMLHttpRequest';
   
-  // Ajouter l'origine actuelle pour aider avec CORS - uniquement si window est disponible
-  if (typeof window !== 'undefined') {
-    config.headers['Origin'] = window.location.origin;
-  }
-  
   // S'assurer que withCredentials est toujours activé
   config.withCredentials = true;
   
