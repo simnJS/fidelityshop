@@ -27,6 +27,7 @@ model User {
   receipts       Receipt[]
   orders         Order[]
   pointTransactions PointTransaction[]
+  giveawayEntries GiveawayEntry[]
 }
 
 model Receipt {
@@ -57,6 +58,7 @@ model Product {
   purchases      Purchase[]
   orders         Order[]
   receipts       Receipt[]
+  giveaways      Giveaway[]
 }
 
 model Purchase {
@@ -96,4 +98,32 @@ model PointTransaction {
   reason         String?        // Raison de la transaction
   adminId        String?        // ID de l'administrateur qui a effectué la transaction (si applicable)
   metadata       String?        // Données supplémentaires au format JSON si nécessaire
+}
+
+model Giveaway {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  title          String
+  description    String          @db.Text
+  imageUrl       String?
+  startDate      DateTime
+  endDate        DateTime
+  status         String          @default("active") // active, completed, cancelled
+  product        Product?        @relation(fields: [productId], references: [id])
+  productId      String?
+  customPrize    String?         @db.Text
+  winnerId       String?
+  entries        GiveawayEntry[]
+}
+
+model GiveawayEntry {
+  id             String         @id @default(uuid())
+  createdAt      DateTime       @default(now())
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+  giveaway       Giveaway       @relation(fields: [giveawayId], references: [id])
+  giveawayId     String
+
+  @@unique([userId, giveawayId])
 }

@@ -3,10 +3,51 @@ import Link from "next/link";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { FaHome, FaGamepad, FaCamera, FaGift, FaUsers, FaShoppingCart, FaAward, FaExchangeAlt, FaUserPlus, FaSignInAlt, FaTachometerAlt } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaHome, FaGamepad, FaCamera, FaGift, FaUsers, FaShoppingCart, FaAward, FaExchangeAlt, FaUserPlus, FaSignInAlt, FaTachometerAlt, FaTrophy } from "react-icons/fa";
+import axios from "axios";
+
+// Interface pour les giveaways
+interface Giveaway {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  product?: {
+    id: string;
+    name: string;
+    imageUrl?: string;
+    pointsCost: number;
+  };
+  customPrize?: string;
+  _count?: {
+    entries: number;
+  };
+}
 
 export default function Home() {
   const { data: session } = useSession();
+  const [activeGiveaways, setActiveGiveaways] = useState<Giveaway[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Récupérer les giveaways actifs
+  useEffect(() => {
+    const fetchActiveGiveaways = async () => {
+      try {
+        const response = await axios.get('/api/giveaways');
+        setActiveGiveaways(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des giveaways:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchActiveGiveaways();
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -249,6 +290,132 @@ export default function Home() {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Section Giveaways */}
+        <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <motion.h2 
+                className="text-3xl md:text-4xl font-bold text-gray-800 mb-4"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <FaTrophy className="inline-block mr-2 text-yellow-500" />
+                Giveaways en cours
+              </motion.h2>
+              <motion.p 
+                className="text-gray-600 max-w-2xl mx-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                Participez à nos tirages au sort pour tenter de gagner des récompenses exclusives.
+                {!session && " Connectez-vous pour participer !"}
+              </motion.p>
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : activeGiveaways.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-lg shadow-md">
+                <FaGift className="mx-auto text-5xl text-gray-300 mb-4" />
+                <p className="text-gray-500">Aucun giveaway en cours pour le moment.</p>
+                <p className="text-gray-500">Revenez bientôt pour de nouvelles opportunités de gagner !</p>
+              </div>
+            ) : (
+              <motion.div 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {activeGiveaways.map((giveaway) => (
+                  <motion.div 
+                    key={giveaway.id}
+                    variants={itemVariants}
+                    className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:shadow-xl hover:-translate-y-1"
+                  >
+                    {giveaway.imageUrl ? (
+                      <div className="h-48 overflow-hidden relative">
+                        <img 
+                          src={giveaway.imageUrl} 
+                          alt={giveaway.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-0 right-0 bg-blue-500 text-white px-3 py-1 rounded-bl-lg">
+                          {giveaway._count?.entries || 0} participants
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
+                        <FaGift className="text-6xl" />
+                        <div className="absolute top-0 right-0 bg-blue-500 text-white px-3 py-1 rounded-bl-lg">
+                          {giveaway._count?.entries || 0} participants
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{giveaway.title}</h3>
+                      <p className="text-gray-600 mb-4 line-clamp-2">{giveaway.description}</p>
+                      
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500">
+                          <span className="font-semibold">Début:</span> {new Date(giveaway.startDate).toLocaleDateString('fr-FR')}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          <span className="font-semibold">Fin:</span> {new Date(giveaway.endDate).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                      
+                      <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                        <p className="text-sm font-semibold text-gray-700">Prix à gagner:</p>
+                        {giveaway.product ? (
+                          <div className="flex items-center mt-1">
+                            {giveaway.product.imageUrl && (
+                              <img 
+                                src={giveaway.product.imageUrl} 
+                                alt={giveaway.product.name}
+                                className="w-10 h-10 object-cover rounded mr-2"
+                              />
+                            )}
+                            <div>
+                              <p className="font-medium">{giveaway.product.name}</p>
+                              <p className="text-xs text-gray-500">Valeur: {giveaway.product.pointsCost} points</p>
+                            </div>
+                          </div>
+                        ) : giveaway.customPrize ? (
+                          <p className="mt-1">{giveaway.customPrize}</p>
+                        ) : (
+                          <p className="text-sm text-gray-500 mt-1">Surprise!</p>
+                        )}
+                      </div>
+                      
+                      <motion.div 
+                        className="mt-4"
+                        whileHover="hover"
+                        whileTap="tap"
+                        variants={buttonVariants}
+                      >
+                        {session ? (
+                          <Link href={`/giveaway/${giveaway.id}`} className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-300">
+                            Participer
+                          </Link>
+                        ) : (
+                          <Link href="/login" className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-300">
+                            Connectez-vous pour participer
+                          </Link>
+                        )}
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        </section>
       </div>
     </>
   );
