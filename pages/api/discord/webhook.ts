@@ -154,23 +154,8 @@ export async function sendMultiProductReceiptNotification(
       throw new Error('Utilisateur non trouvé');
     }
 
-    // URL complète de l'image principale
+    // URL complète de l'image
     const imageUrl = receipt.imageUrl.startsWith('http') ? receipt.imageUrl : `${process.env.NEXT_PUBLIC_URL}${receipt.imageUrl}`;
-
-    // Récupérer les images supplémentaires du metadata si elles existent
-    let additionalImages: string[] = [];
-    if (receipt.metadata) {
-      try {
-        const parsedMetadata = JSON.parse(receipt.metadata);
-        if (parsedMetadata.additionalImages && Array.isArray(parsedMetadata.additionalImages)) {
-          additionalImages = parsedMetadata.additionalImages.map((img: string) => 
-            img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_URL}${img}`
-          );
-        }
-      } catch (e) {
-        console.error('Erreur lors du parsing du metadata pour les images supplémentaires:', e);
-      }
-    }
 
     // Créer un tableau avec les informations des produits
     let productsInfo = products.map(p => 
@@ -186,7 +171,7 @@ export async function sendMultiProductReceiptNotification(
     const embed = new EmbedBuilder()
       .setTitle('📝 Nouvelle preuve d\'achat multi-produits')
       .setColor('#ff9900')
-      .setDescription(`Un utilisateur a envoyé une preuve d'achat pour plusieurs produits.`)
+      .setDescription(`Un utilisateur a envoyé une preuve d'achat pour plusieurs produits.\n\n**Lien de l'image:** [Voir en plein écran](${imageUrl})`)
       .addFields(
         { name: '👤 Utilisateur', value: user.username, inline: true },
         { name: '🎮 Nom Minecraft', value: user.minecraftName || 'Non défini', inline: true },
@@ -225,21 +210,9 @@ export async function sendMultiProductReceiptNotification(
     // Typecasting pour s'assurer que channel est un TextChannel
     const textChannel = channel as TextChannel;
     
-    // Préparer un message contenant tous les liens d'images
-    let imagesContent = `**🖼️ PREUVE D'ACHAT MULTI-PRODUITS - ${user.username}**\n`;
-    imagesContent += `Image principale: ${imageUrl}\n`;
-    
-    // Ajouter les liens des images supplémentaires s'il y en a
-    if (additionalImages.length > 0) {
-      imagesContent += `\n**Images supplémentaires:**\n`;
-      additionalImages.forEach((img, index) => {
-        imagesContent += `${index + 1}. ${img}\n`;
-      });
-    }
-    
-    // Envoyer d'abord les liens d'images pour qu'ils soient facilement accessibles
+    // Envoyer d'abord l'image brute pour qu'elle soit facilement visible
     await textChannel.send({
-      content: imagesContent
+      content: `**🖼️ PREUVE D'ACHAT MULTI-PRODUITS - ${user.username}**\n${imageUrl}`
     });
     
     // Puis envoyer l'embed avec les boutons

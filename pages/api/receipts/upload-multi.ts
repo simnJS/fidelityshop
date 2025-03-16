@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getSession } from 'next-auth/react';
 import { prisma } from '../../../lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
 import path from 'path';
 import fs from 'fs';
 import { sendMultiProductReceiptNotification } from '../discord/webhook';
@@ -58,32 +57,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Ajouter des headers CORS pour permettre les requêtes entre domaines avec cookies
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-  // Gérer les requêtes OPTIONS (preflight)
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
 
-  // @ts-ignore - Ignorer l'erreur de type pour authOptions
-  const session = await getServerSession(req, res, authOptions);
+  const session = await getSession({ req });
 
   if (!session) {
     return res.status(401).json({ message: 'Non autorisé' });
   }
 
-  const userId = session.user.id;
-
-  if (!userId) {
+  if (!session.user.id) {
     return res.status(400).json({ message: 'ID utilisateur manquant dans la session' });
   }
 
@@ -96,9 +80,8 @@ export default async function handler(
     const form = formidable({
       uploadDir: tmpDir,
       maxFileSize: 5 * 1024 * 1024, // 5MB
-      multiples: true, // Permettre plusieurs fichiers
       filter: function(part) {
-        return part.name === 'receipts' && 
+        return part.name === 'receipt' && 
                (part.mimetype?.includes('image/jpeg') || 
                 part.mimetype?.includes('image/png') || 
                 part.mimetype?.includes('image/gif') || 
@@ -114,15 +97,11 @@ export default async function handler(
       });
     });
 
-    // Récupérer les fichiers
-    const fileData = files.receipts;
-    if (!fileData) {
-      return res.status(400).json({ message: 'Aucun fichier n\'a été téléchargé' });
-    }
-    
-    const receiptFiles = Array.isArray(fileData) ? fileData : [fileData];
+    // Récupérer le fichier
+    const fileData = files.receipt;
+    const file = Array.isArray(fileData) ? fileData[0] : fileData;
 
-    if (receiptFiles.length === 0) {
+    if (!file) {
       return res.status(400).json({ message: 'Aucun fichier n\'a été téléchargé' });
     }
 
@@ -172,73 +151,44 @@ export default async function handler(
       return sum + (item.pointsCost * item.quantity);
     }, 0);
 
-    // Uploader chaque image vers le CDN
-    const uploadedImages = await Promise.all(
-      receiptFiles.map(async (file) => {
-        // Vérifier si le fichier existe
-        if (!file || !file.filepath) {
-          console.error('Fichier invalide:', file);
-          return null;
-        }
-        
-        try {
-          const filepath = file.filepath;
-          const originalFilename = file.originalFilename || `receipt-multi-${Date.now()}-${Math.random().toString(36).substring(2, 15)}.jpg`;
-          const mimetype = file.mimetype || 'image/jpeg';
-          
-          const cdnUrl = await uploadToCDN(
-            filepath,
-            originalFilename,
-            mimetype
-          );
-          
-          // Supprimer le fichier local temporaire
-          if (fs.existsSync(filepath)) {
-            fs.unlinkSync(filepath);
-          }
-          
-          return cdnUrl;
-        } catch (uploadError) {
-          console.error('Erreur lors de l\'upload au CDN:', uploadError);
-          
-          if (!file.filepath || !fs.existsSync(file.filepath)) {
-            return null;
-          }
-          
-          // Fallback : si l'upload vers le CDN échoue, on utilise le stockage local
-          const uploadDir = path.join(process.cwd(), 'public/uploads');
-          if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-          }
-          
-          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${file.originalFilename || 'receipt-multi.jpg'}`;
-          const localFilePath = path.join(uploadDir, fileName);
-          
-          fs.copyFileSync(file.filepath, localFilePath);
-          fs.unlinkSync(file.filepath);
-          
-          return `/uploads/${fileName}`;
-        }
-      })
-    );
-
-    // Filtrer les images null
-    const validImages = uploadedImages.filter(url => url !== null) as string[];
-    
-    if (validImages.length === 0) {
-      return res.status(400).json({ message: 'Aucune image n\'a pu être traitée correctement' });
+    // Uploader l'image vers le CDN
+    let cdnImageUrl = '';
+    try {
+      cdnImageUrl = await uploadToCDN(
+        file.filepath, 
+        file.originalFilename || `receipt-multi-${Date.now()}.jpg`,
+        file.mimetype || 'image/jpeg'
+      );
+      
+      // Supprimer le fichier local temporaire
+      fs.unlinkSync(file.filepath);
+    } catch (uploadError) {
+      console.error('Erreur lors de l\'upload au CDN:', uploadError);
+      
+      // Fallback : si l'upload vers le CDN échoue, on utilise le stockage local
+      const uploadDir = path.join(process.cwd(), 'public/uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      const fileName = `${Date.now()}-${file.originalFilename || 'receipt-multi.jpg'}`;
+      const localFilePath = path.join(uploadDir, fileName);
+      
+      fs.copyFileSync(file.filepath, localFilePath);
+      fs.unlinkSync(file.filepath);
+      
+      cdnImageUrl = `/uploads/${fileName}`;
     }
 
-    // Créer l'entrée dans la base de données avec toutes les images
+    // Créer l'entrée dans la base de données
     const receipt = await prisma.receipt.create({
       data: {
-        imageUrl: validImages[0], // Image principale (première)
-        userId: userId,
+        imageUrl: cdnImageUrl,
+        userId: session.user.id,
         status: 'pending',
         metadata: JSON.stringify({
           products: selectedProducts,
-          totalPotentialPoints,
-          additionalImages: validImages.slice(1) // Stocker les images supplémentaires
+          totalPotentialPoints
         })
       },
     });
@@ -255,12 +205,11 @@ export default async function handler(
     }
 
     return res.status(201).json({
-      message: 'Preuves d\'achat téléchargées avec succès',
+      message: 'Preuve d\'achat téléchargée avec succès',
       receipt,
-      imageCount: validImages.length
     });
   } catch (error) {
-    console.error('Erreur lors du téléchargement des preuves d\'achat:', error);
+    console.error('Erreur lors du téléchargement de la preuve d\'achat:', error);
     return res.status(500).json({ message: 'Erreur du serveur' });
   }
 } 

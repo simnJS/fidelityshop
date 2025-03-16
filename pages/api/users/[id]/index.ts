@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../../lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]';
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,7 +8,7 @@ export default async function handler(
 ) {
   // Ajouter des headers CORS pour permettre les requêtes entre domaines avec cookies
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
@@ -19,15 +18,14 @@ export default async function handler(
     return;
   }
 
-  // @ts-ignore - Ignorer l'erreur de type pour authOptions
-  const session = await getServerSession(req, res, authOptions);
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!session) {
+  if (!token) {
     return res.status(401).json({ message: 'Non autorisé' });
   }
 
   // Vérifier que l'utilisateur est administrateur
-  if (!session.user.isAdmin) {
+  if (!token.isAdmin) {
     return res.status(403).json({ message: 'Accès refusé - Droits d\'administrateur requis' });
   }
 

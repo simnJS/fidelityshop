@@ -23,7 +23,7 @@ export default async function handler(
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
 
-  const token = await getToken({ req });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token) {
     return res.status(401).json({ message: 'Non autorisé' });

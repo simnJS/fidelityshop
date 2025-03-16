@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrophy, FaUser, FaShoppingCart, FaHome, FaSignOutAlt, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
-import Image from 'next/image';
 
 interface LayoutProps {
   children: ReactNode;
@@ -34,34 +33,8 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
 
   const handleSignOut = async () => {
-    try {
-      // Afficher un message pour informer l'utilisateur que la déconnexion est en cours
-      console.log('Déconnexion en cours...');
-      
-      // Essayer de se déconnecter via next-auth et rediriger vers la page de connexion
-      // en forçant un rechargement complet
-      const result = await signOut({ 
-        redirect: false
-      });
-      
-      console.log('Résultat de la déconnexion:', result);
-      
-      // Effacer manuellement les cookies liés à l'authentification
-      document.cookie.split(';').forEach(cookie => {
-        const [name] = cookie.split('=').map(c => c.trim());
-        if (name.includes('next-auth')) {
-          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
-          console.log(`Cookie effacé: ${name}`);
-        }
-      });
-      
-      // Rediriger vers la page de connexion avec un paramètre from pour indiquer la source
-      window.location.href = '/login?from=signout';
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      // En cas d'erreur, forcer une redirection vers la page de connexion
-      window.location.href = '/login?from=signout&error=true';
-    }
+    await signOut({ redirect: false });
+    router.push('/login');
   };
 
   // Animation variants

@@ -198,7 +198,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Télécharger une preuve d'achat */}
         <div className="bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-blue-400 mb-4">Envoyer une preuve de vente</h2>
+          <h2 className="text-xl font-semibold text-blue-400 mb-4">Envoyer une preuve d'achat</h2>
           
           {message.content && (
             <div className={`p-3 mb-4 rounded ${
@@ -223,7 +223,7 @@ export default function Dashboard() {
 
         {/* Boutique */}
         <div className="bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-blue-400 mb-4">Réclamer des récompenses</h2>
+          <h2 className="text-xl font-semibold text-blue-400 mb-4">Acheter des récompenses</h2>
           <p className="text-gray-300 mb-4">
             Échangez vos points contre des articles exclusifs dans notre boutique.
           </p>

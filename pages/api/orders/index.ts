@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,7 +8,7 @@ export default async function handler(
 ) {
   // Ajouter des headers CORS pour permettre les requêtes entre domaines avec cookies
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
@@ -19,30 +18,17 @@ export default async function handler(
     return;
   }
 
-  // Ajouter des logs pour le débogage
-  console.log('API orders - Cookies reçus:', req.cookies);
-  console.log('API orders - Headers reçus:', {
-    origin: req.headers.origin,
-    referer: req.headers.referer,
-    cookie: req.headers.cookie?.substring(0, 50) + '...' // Tronquer pour la lisibilité
-  });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // @ts-ignore - Ignorer l'erreur de type pour authOptions
-  const session = await getServerSession(req, res, authOptions);
-  
-  console.log('API orders - Session:', session ? 'Session présente' : 'Session absente');
-  
-  if (!session) {
-    console.log('API orders - Authentification échouée');
+  if (!token) {
     return res.status(401).json({ message: 'Non autorisé' });
   }
 
   try {
-    const userId = session.user.id as string;
-    console.log('API orders - Utilisateur authentifié:', userId.substring(0, 8) + '...');
+    const userId = token.id as string;
 
     // Si l'utilisateur est admin, il peut voir toutes les commandes
-    if (session.user.isAdmin && req.query.all === 'true') {
+    if (token.isAdmin && req.query.all === 'true') {
       const orders = await prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
@@ -67,7 +53,6 @@ export default async function handler(
       }
     });
 
-    console.log(`API orders - ${orders.length} commandes trouvées`);
     return res.status(200).json(orders);
   } catch (error) {
     console.error('Erreur lors de la récupération des commandes:', error);
