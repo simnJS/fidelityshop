@@ -33,9 +33,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'ID de giveaway invalide' });
     }
 
-    if (req.method === 'POST') {
+    if (req.method === 'GET') {
       try {
-        // Vérifier que le giveaway existe et est actif
+        // Vérifier que le giveaway existe
         const giveaway = await prisma.giveaway.findUnique({
           where: { id }
         });
@@ -44,15 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(404).json({ error: 'Giveaway non trouvé' });
         }
 
-        if (giveaway.status !== 'active') {
-          return res.status(400).json({ error: 'Ce giveaway n\'est pas actif' });
-        }
-
-        if (giveaway.winnerId) {
-          return res.status(400).json({ error: 'Ce giveaway a déjà un gagnant' });
-        }
-
-        // Récupérer toutes les participations
+        // Récupérer les participations
         const entries = await prisma.giveawayEntry.findMany({
           where: { giveawayId: id },
           include: {
@@ -62,40 +54,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 username: true
               }
             }
+          },
+          orderBy: {
+            createdAt: 'desc'
           }
         });
 
-        if (entries.length === 0) {
-          return res.status(400).json({ error: 'Aucun participant à ce giveaway' });
-        }
-
-        // Sélectionner un gagnant aléatoire
-        const randomIndex = Math.floor(Math.random() * entries.length);
-        const winner = entries[randomIndex];
-
-        // Mettre à jour le giveaway avec le gagnant
-        await prisma.giveaway.update({
-          where: { id },
-          data: {
-            winnerId: winner.userId,
-            status: 'completed'
-          }
-        });
-
-        return res.status(200).json({
-          success: true,
-          winnerId: winner.userId,
-          winnerUsername: winner.user.username
-        });
+        return res.status(200).json(entries);
       } catch (error) {
-        console.error('Erreur lors de la sélection du gagnant:', error);
+        console.error('Erreur lors de la récupération des participations:', error);
         return res.status(500).json({ error: 'Erreur serveur', details: (error as Error).message });
       }
     } else {
       return res.status(405).json({ error: 'Méthode non autorisée' });
     }
   } catch (error) {
-    console.error('Erreur globale dans l\'API de sélection du gagnant:', error);
+    console.error('Erreur globale dans l\'API des participations au giveaway:', error);
     return res.status(500).json({ error: 'Erreur serveur interne', details: (error as Error).message });
   }
 } 

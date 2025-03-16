@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 
-declare global {
-  var prisma: PrismaClient | undefined
-}
+// Éviter de créer plusieurs instances de PrismaClient 
+// en développement en raison du hot-reloading
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-export const prisma = global.prisma || new PrismaClient()
+export const prisma = globalForPrisma.prisma || new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+})
 
-if (process.env.NODE_ENV !== 'production') global.prisma = prisma 
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma 

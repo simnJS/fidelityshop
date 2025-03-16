@@ -48,6 +48,7 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        session.user = session.user || {};
         session.user.id = token.id;
         session.user.isAdmin = token.isAdmin;
       }
@@ -63,6 +64,18 @@ export const authOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60 // 30 jours
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  },
+  debug: process.env.NODE_ENV !== 'production',
   secret: process.env.NEXTAUTH_SECRET || 'default-secret-key-change-in-production',
 };
 

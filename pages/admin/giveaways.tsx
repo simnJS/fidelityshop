@@ -76,12 +76,12 @@ export default function AdminGiveawaysPage() {
   const fetchGiveaways = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/admin/giveaways');
+      const response = await axios.get('/api/admin/giveaways', { withCredentials: true });
       setGiveaways(response.data);
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la récupération des giveaways:', error);
-      setMessage({ type: 'error', content: 'Impossible de récupérer les giveaways' });
+      setMessage({ type: 'error', content: 'Impossible de récupérer les giveaways: ' + (error.response?.data?.error || error.message) });
       setLoading(false);
     }
   };
@@ -89,20 +89,22 @@ export default function AdminGiveawaysPage() {
   // Récupérer les produits pour les prix
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('/api/admin/products');
+      const response = await axios.get('/api/admin/products', { withCredentials: true });
       setProducts(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la récupération des produits:', error);
+      setMessage({ type: 'error', content: 'Impossible de récupérer les produits: ' + (error.response?.data?.error || error.message) });
     }
   };
 
   // Récupérer les images disponibles
   const fetchAvailableImages = async () => {
     try {
-      const response = await axios.get('/api/admin/cdn-images');
+      const response = await axios.get('/api/admin/cdn-images', { withCredentials: true });
       setAvailableImages(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la récupération des images:', error);
+      setMessage({ type: 'error', content: 'Impossible de récupérer les images: ' + (error.response?.data?.error || error.message) });
     }
   };
 
@@ -155,21 +157,29 @@ export default function AdminGiveawaysPage() {
         customPrize: selectedPrizeType === 'custom' ? formData.customPrize : null
       };
       
+      // Configurer axios pour inclure les cookies dans les requêtes
+      const config = {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
       if (formMode === 'create') {
         // Créer un nouveau giveaway
-        await axios.post('/api/admin/giveaways', payload);
+        await axios.post('/api/admin/giveaways', payload, config);
         setMessage({ type: 'success', content: 'Giveaway créé avec succès!' });
       } else if (editingGiveaway) {
         // Mettre à jour un giveaway existant
-        await axios.put(`/api/admin/giveaways/${editingGiveaway.id}`, payload);
+        await axios.put(`/api/admin/giveaways/${editingGiveaway.id}`, payload, config);
         setMessage({ type: 'success', content: 'Giveaway mis à jour avec succès!' });
       }
       
       resetForm();
       fetchGiveaways();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la soumission du formulaire:', error);
-      setMessage({ type: 'error', content: 'Une erreur est survenue' });
+      setMessage({ type: 'error', content: 'Une erreur est survenue: ' + (error.response?.data?.error || error.message) });
     } finally {
       setLoading(false);
     }
