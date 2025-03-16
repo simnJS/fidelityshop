@@ -77,7 +77,7 @@ export async function sendReceiptNotification(receipt: Receipt) {
         { name: '🔢 ID du reçu', value: receipt.id, inline: false }
       )
       .setImage(imageUrl)
-      .setFooter({ text: 'FidelityShop - Système de preuves d\'achat' })
+      .setFooter({ text: 'SimnShop - Système de preuves d\'achat' })
       .setTimestamp();
 
     // Créer les boutons
@@ -181,7 +181,7 @@ export async function sendMultiProductReceiptNotification(
         { name: '🔢 ID du reçu', value: receipt.id, inline: true }
       )
       .setImage(imageUrl)
-      .setFooter({ text: 'FidelityShop - Système de preuves d\'achat' })
+      .setFooter({ text: 'SimnShop - Système de preuves d\'achat' })
       .setTimestamp();
 
     // Créer les boutons
@@ -282,7 +282,7 @@ export async function sendOrderNotification(order: Order) {
         { name: '💰 Points', value: order.totalPoints.toString(), inline: true },
         { name: '🆔 ID de commande', value: order.id, inline: false }
       )
-      .setFooter({ text: 'FidelityShop - Système de commandes' })
+      .setFooter({ text: 'SimnShop - Système de commandes' })
       .setTimestamp();
 
     console.log('Création des boutons Discord');

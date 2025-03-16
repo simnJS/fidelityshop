@@ -1,6 +1,6 @@
-# FidelityShop - Système de Points de Fidélité Minecraft
+# SimnShop - Système de Points de Fidélité Minecraft
 
-FidelityShop est une application web qui permet de gérer un système de points de fidélité pour votre serveur Minecraft. Les utilisateurs peuvent télécharger des preuves d'achat, recevoir des points et les échanger contre des récompenses.
+SimnShop est une application web qui permet de gérer un système de points de fidélité pour votre serveur Minecraft. Les utilisateurs peuvent télécharger des preuves d'achat, recevoir des points et les échanger contre des récompenses.
 
 ## Fonctionnalités
 
@@ -20,8 +20,8 @@ FidelityShop est une application web qui permet de gérer un système de points 
 
 1. Clonez ce dépôt :
 ```bash
-git clone https://github.com/votre-nom/fidelityshop.git
-cd fidelityshop
+git clone https://github.com/votre-nom/simnshop.git
+cd simnshop
 ```
 
 2. Installez les dépendances :

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: simnshop
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CHANNEL_ID=${DISCORD_CHANNEL_ID}
+      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3000}
+    networks:
+      - simnshop_network
+
+  db:
+    container_name: simnshop_db
+    image: postgres:14-alpine
+    restart: always
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-simnshop}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-simnshop_password}
+      - POSTGRES_DB=${DB_NAME:-simnshop}
+    networks:
+      - simnshop_network
+
+volumes:
+  postgres_data:
+    name: simnshop_db_data
+
+networks:
+  simnshop_network:
+    name: simnshop_network 
