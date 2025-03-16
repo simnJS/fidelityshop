@@ -1,6 +1,6 @@
 services:
   app:
-    container_name: simnshop_app_${COMPOSE_PROJECT_NAME:-prod}
+    container_name: app_${COMPOSE_PROJECT_NAME:-prod}
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,7 +8,7 @@ services:
     ports:
       - "3744:3000"
     environment:
-      - DATABASE_URL=file:/app/prisma/dev.db
+      - DATABASE_URL=${DATABASE_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3744}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
@@ -16,8 +16,8 @@ services:
       - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3744}
       - DOMAIN=${DOMAIN:-localhost}
     volumes:
-      - sqlite_data:/app/prisma
+      - app_data:/app/prisma
 
 volumes:
-  sqlite_data:
-    name: simnshop_sqlite_data_${COMPOSE_PROJECT_NAME:-prod}
+  app_data:
+    name: simnshop_data_${COMPOSE_PROJECT_NAME:-prod}
