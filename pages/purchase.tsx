@@ -148,7 +148,7 @@ export default function PurchasePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-blue-400 mb-8">Acheter des produits</h1>
+      <h1 className="text-3xl font-bold text-blue-400 mb-8">Produit que vous avez vendu</h1>
       
       {message.content && (
         <div className={`p-4 mb-6 rounded ${message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
@@ -246,15 +246,15 @@ export default function PurchasePage() {
               onClick={() => setShowUploadSection(true)}
               className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Envoyer une preuve d'achat
+              Envoyer une preuve de vente
             </button>
           ) : (
             <div className="mt-6 border-t border-gray-700 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Téléchargez votre preuve d'achat</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Téléchargez votre preuve de vente</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-gray-300 mb-2">
-                    Sélectionnez une capture d'écran de votre achat
+                    Sélectionnez une capture d'écran de votre vente
                   </label>
                   <input
                     type="file"

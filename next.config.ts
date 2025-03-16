@@ -1,27 +1,34 @@
-import type { NextConfig } from "next";
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactStrictMode: true,
   output: 'standalone',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  poweredByHeader: false,
+  compress: true,
+  productionBrowserSourceMaps: false,
+  swcMinify: true,
   images: {
-    domains: ['*'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
+    domains: [
+      // Vos domaines ici
+      'cdn.simnjs.fr',
+      'localhost'
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24, // 24 heures
+  },
+  // Optimiser le build en webpack
+  webpack: (config, { dev, isServer }) => {
+    // Seulement pour la production
+    if (!dev) {
+      // Optimize pour la production uniquement
+      config.optimization.minimize = true;
+    }
+
+    return config;
+  },
+  experimental: {
+    optimizeCss: true, // Optimiser CSS en production
+    optimizeServerReact: true, // Optimiser React côté serveur
   },
 };
 

@@ -228,18 +228,18 @@ export default function AdminGiveawaysPage() {
       </Head>
       
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">Gestion des Giveaways</h1>
+        <h1 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">Gestion des Giveaways</h1>
         
         {/* Message de notification */}
         {message.content && (
-          <div className={`p-4 mb-4 rounded ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          <div className={`p-4 mb-4 rounded ${message.type === 'success' ? 'bg-green-900/50 text-green-400 border border-green-700' : 'bg-red-900/50 text-red-400 border border-red-700'}`}>
             {message.content}
           </div>
         )}
         
         {/* Formulaire de création/édition */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-xl font-semibold mb-4">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md mb-8 border border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-blue-400">
             {formMode === 'create' ? 'Créer un nouveau giveaway' : 'Modifier le giveaway'}
           </h2>
           
@@ -247,33 +247,33 @@ export default function AdminGiveawaysPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Titre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Titre</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               {/* Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Image</label>
                 <div className="flex items-center">
                   <input
                     type="text"
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleInputChange}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                     placeholder="URL de l'image"
                   />
                   <button
                     type="button"
                     onClick={() => setShowImageSelector(true)}
-                    className="ml-2 px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                    className="ml-2 px-3 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-500 transition-colors"
                   >
                     Choisir
                   </button>
@@ -283,7 +283,7 @@ export default function AdminGiveawaysPage() {
                     <img 
                       src={formData.imageUrl} 
                       alt="Aperçu" 
-                      className="h-24 w-auto object-contain border rounded p-1" 
+                      className="h-24 w-auto object-contain border border-gray-600 rounded p-1" 
                     />
                   </div>
                 )}
@@ -292,12 +292,12 @@ export default function AdminGiveawaysPage() {
             
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                 rows={4}
                 required
               />
@@ -306,37 +306,37 @@ export default function AdminGiveawaysPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Dates */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Date de début</label>
                 <input
                   type="datetime-local"
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Date de fin</label>
                 <input
                   type="datetime-local"
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
               </div>
               
               {/* Statut */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Statut</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
                   <option value="active">Actif</option>
@@ -347,7 +347,7 @@ export default function AdminGiveawaysPage() {
               
               {/* Type de prix */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type de prix</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Type de prix</label>
                 <div className="flex space-x-4">
                   <label className="inline-flex items-center">
                     <input
@@ -356,9 +356,9 @@ export default function AdminGiveawaysPage() {
                       value="product"
                       checked={selectedPrizeType === 'product'}
                       onChange={() => setSelectedPrizeType('product')}
-                      className="form-radio"
+                      className="form-radio text-blue-500"
                     />
-                    <span className="ml-2">Produit</span>
+                    <span className="ml-2 text-gray-200">Produit</span>
                   </label>
                   <label className="inline-flex items-center">
                     <input
@@ -367,9 +367,9 @@ export default function AdminGiveawaysPage() {
                       value="custom"
                       checked={selectedPrizeType === 'custom'}
                       onChange={() => setSelectedPrizeType('custom')}
-                      className="form-radio"
+                      className="form-radio text-blue-500"
                     />
-                    <span className="ml-2">Prix personnalisé</span>
+                    <span className="ml-2 text-gray-200">Prix personnalisé</span>
                   </label>
                 </div>
               </div>
@@ -378,12 +378,12 @@ export default function AdminGiveawaysPage() {
             {/* Sélection du prix selon le type */}
             {selectedPrizeType === 'product' ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Produit à gagner</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Produit à gagner</label>
                 <select
                   name="productId"
                   value={formData.productId}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   required={selectedPrizeType === 'product'}
                 >
                   <option value="">Sélectionner un produit</option>
@@ -396,13 +396,13 @@ export default function AdminGiveawaysPage() {
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description du prix</label>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Description du prix</label>
                 <input
                   type="text"
                   name="customPrize"
                   value={formData.customPrize}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Ex: Carte Steam 20€"
                   required={selectedPrizeType === 'custom'}
                 />
@@ -413,7 +413,7 @@ export default function AdminGiveawaysPage() {
             <div className="flex space-x-4">
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring"
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded focus:outline-none focus:ring transition-colors"
                 disabled={loading}
               >
                 {formMode === 'create' ? 'Créer le giveaway' : 'Mettre à jour le giveaway'}
@@ -423,7 +423,7 @@ export default function AdminGiveawaysPage() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 focus:outline-none focus:ring"
+                  className="px-4 py-2 bg-gray-600 text-gray-200 rounded hover:bg-gray-500 focus:outline-none focus:ring transition-colors"
                 >
                   Annuler
                 </button>
@@ -433,9 +433,9 @@ export default function AdminGiveawaysPage() {
         </div>
         
         {/* Liste des giveaways */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b">
-            <h3 className="text-lg font-semibold">Liste des giveaways</h3>
+        <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-700 bg-gray-750">
+            <h3 className="text-lg font-semibold text-blue-400">Liste des giveaways</h3>
           </div>
           
           {loading ? (
@@ -446,26 +446,26 @@ export default function AdminGiveawaysPage() {
               </svg>
             </div>
           ) : giveaways.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <FaGift className="mx-auto mb-2 text-4xl text-gray-300" />
+            <div className="text-center py-8 text-gray-400">
+              <FaGift className="mx-auto mb-2 text-4xl text-gray-600" />
               <p>Aucun giveaway disponible</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-700">
+                <thead className="bg-gray-750">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giveaway</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participants</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Giveaway</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Dates</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Prix</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Statut</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Participants</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {giveaways.map(giveaway => (
-                    <tr key={giveaway.id} className="hover:bg-gray-50">
+                    <tr key={giveaway.id} className="hover:bg-gray-750 transition-colors">
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {giveaway.imageUrl && (
@@ -478,13 +478,13 @@ export default function AdminGiveawaysPage() {
                             </div>
                           )}
                           <div>
-                            <div className="font-medium text-gray-900">{giveaway.title}</div>
-                            <div className="text-gray-500 text-sm truncate w-48">{giveaway.description}</div>
+                            <div className="font-medium text-gray-200">{giveaway.title}</div>
+                            <div className="text-gray-400 text-sm truncate w-48">{giveaway.description}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm">
+                        <div className="text-sm text-gray-300">
                           <div>Début: {new Date(giveaway.startDate).toLocaleDateString('fr-FR')}</div>
                           <div>Fin: {new Date(giveaway.endDate).toLocaleDateString('fr-FR')}</div>
                         </div>
@@ -492,36 +492,40 @@ export default function AdminGiveawaysPage() {
                       <td className="px-4 py-4 whitespace-nowrap">
                         {giveaway.product ? (
                           <div className="text-sm">
-                            <div className="font-medium">{giveaway.product.name}</div>
-                            <div className="text-gray-500">{giveaway.product.pointsCost} points</div>
+                            <div className="font-medium text-gray-200">{giveaway.product.name}</div>
+                            <div className="text-blue-400">{giveaway.product.pointsCost} points</div>
                           </div>
                         ) : giveaway.customPrize ? (
-                          <div className="text-sm">{giveaway.customPrize}</div>
+                          <div className="text-sm text-gray-200">{giveaway.customPrize}</div>
                         ) : (
-                          <div className="text-sm text-gray-500">Aucun prix défini</div>
+                          <div className="text-sm text-gray-400">Aucun prix défini</div>
                         )}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor(giveaway.status)}`}>
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${giveaway.status === 'active' ? 'bg-green-900/50 text-green-400 border border-green-700' : 
+                          giveaway.status === 'completed' ? 'bg-blue-900/50 text-blue-400 border border-blue-700' : 
+                          'bg-gray-700 text-gray-300 border border-gray-600'}`}
+                        >
                           {giveaway.status === 'active' ? 'Actif' : 
                            giveaway.status === 'completed' ? 'Terminé' : 'Annulé'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-300">
                         {giveaway._count?.entries || 0} participants
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex space-x-2 justify-end">
+                        <div className="flex space-x-3 justify-end">
                           <button
                             onClick={() => handleEditClick(giveaway)}
-                            className="text-indigo-600 hover:text-indigo-900"
+                            className="text-blue-400 hover:text-blue-300 transition-colors"
                             title="Modifier"
                           >
                             <FaEdit />
                           </button>
                           <button
                             onClick={() => handleDelete(giveaway.id)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-400 hover:text-red-300 transition-colors"
                             title="Supprimer"
                           >
                             <FaTrash />
@@ -529,7 +533,7 @@ export default function AdminGiveawaysPage() {
                           {giveaway.status === 'active' && (
                             <button
                               onClick={() => handlePickWinner(giveaway.id)}
-                              className="text-yellow-600 hover:text-yellow-900"
+                              className="text-yellow-400 hover:text-yellow-300 transition-colors"
                               title="Sélectionner un gagnant"
                             >
                               <FaTrophy />
@@ -548,13 +552,13 @@ export default function AdminGiveawaysPage() {
       
       {/* Sélecteur d'images */}
       {showImageSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-3/4 max-h-3/4 overflow-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-3/4 max-h-3/4 overflow-auto border border-gray-700">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Sélectionner une image</h3>
+              <h3 className="text-lg font-semibold text-blue-400">Sélectionner une image</h3>
               <button 
                 onClick={() => setShowImageSelector(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-200 transition-colors"
               >
                 &times;
               </button>
@@ -564,22 +568,22 @@ export default function AdminGiveawaysPage() {
                 <div 
                   key={index}
                   onClick={() => selectImage(imageUrl)}
-                  className="cursor-pointer border rounded p-2 hover:border-blue-500"
+                  className="cursor-pointer border border-gray-600 rounded p-2 hover:border-blue-500 transition-colors"
                 >
                   <img src={imageUrl} alt={`Image ${index}`} className="h-24 w-full object-contain" />
                 </div>
               ))}
             </div>
             {availableImages.length === 0 && (
-              <div className="text-center py-4 text-gray-500">Aucune image disponible</div>
+              <div className="text-center py-4 text-gray-400">Aucune image disponible</div>
             )}
           </div>
         </div>
       )}
       
       {/* Uploader d'images */}
-      <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Télécharger une nouvelle image</h3>
+      <div className="mt-8 bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+        <h3 className="text-lg font-semibold mb-4 text-blue-400">Télécharger une nouvelle image</h3>
         <ZiplineUploader onUploadComplete={(url) => {
           fetchAvailableImages();
           setFormData({ ...formData, imageUrl: url });

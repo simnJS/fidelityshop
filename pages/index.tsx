@@ -292,11 +292,14 @@ export default function Home() {
         </div>
 
         {/* Section Giveaways */}
-        <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
-          <div className="container mx-auto px-4">
+        <section className="w-full py-16 px-4 bg-gray-900 relative overflow-hidden">
+          {/* Effet de gradient en arrière-plan */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/20 to-transparent"></div>
+          
+          <div className="max-w-5xl mx-auto relative z-10">
             <div className="text-center mb-12">
               <motion.h2 
-                className="text-3xl md:text-4xl font-bold text-gray-800 mb-4"
+                className="text-3xl md:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -305,7 +308,7 @@ export default function Home() {
                 Giveaways en cours
               </motion.h2>
               <motion.p 
-                className="text-gray-600 max-w-2xl mx-auto"
+                className="text-gray-300 max-w-2xl mx-auto"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -320,10 +323,10 @@ export default function Home() {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
               </div>
             ) : activeGiveaways.length === 0 ? (
-              <div className="text-center py-8 bg-white rounded-lg shadow-md">
-                <FaGift className="mx-auto text-5xl text-gray-300 mb-4" />
-                <p className="text-gray-500">Aucun giveaway en cours pour le moment.</p>
-                <p className="text-gray-500">Revenez bientôt pour de nouvelles opportunités de gagner !</p>
+              <div className="text-center py-8 bg-gray-800 rounded-lg shadow-md border border-gray-700">
+                <FaGift className="mx-auto text-5xl text-gray-500 mb-4" />
+                <p className="text-gray-300">Aucun giveaway en cours pour le moment.</p>
+                <p className="text-gray-400">Revenez bientôt pour de nouvelles opportunités de gagner !</p>
               </div>
             ) : (
               <motion.div 
@@ -336,7 +339,7 @@ export default function Home() {
                   <motion.div 
                     key={giveaway.id}
                     variants={itemVariants}
-                    className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-gray-800 rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:shadow-blue-800/20 hover:-translate-y-1 border border-gray-700"
                   >
                     {giveaway.imageUrl ? (
                       <div className="h-48 overflow-hidden relative">
@@ -345,33 +348,33 @@ export default function Home() {
                           alt={giveaway.title}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute top-0 right-0 bg-blue-500 text-white px-3 py-1 rounded-bl-lg">
+                        <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg">
                           {giveaway._count?.entries || 0} participants
                         </div>
                       </div>
                     ) : (
-                      <div className="h-48 bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white">
+                      <div className="h-48 bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center text-white relative">
                         <FaGift className="text-6xl" />
-                        <div className="absolute top-0 right-0 bg-blue-500 text-white px-3 py-1 rounded-bl-lg">
+                        <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg">
                           {giveaway._count?.entries || 0} participants
                         </div>
                       </div>
                     )}
                     <div className="p-6">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{giveaway.title}</h3>
-                      <p className="text-gray-600 mb-4 line-clamp-2">{giveaway.description}</p>
+                      <h3 className="text-xl font-bold text-blue-400 mb-2">{giveaway.title}</h3>
+                      <p className="text-gray-300 mb-4 line-clamp-2">{giveaway.description}</p>
                       
                       <div className="mb-4">
-                        <p className="text-sm text-gray-500">
-                          <span className="font-semibold">Début:</span> {new Date(giveaway.startDate).toLocaleDateString('fr-FR')}
+                        <p className="text-sm text-gray-400">
+                          <span className="font-semibold text-gray-300">Début:</span> {new Date(giveaway.startDate).toLocaleDateString('fr-FR')}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          <span className="font-semibold">Fin:</span> {new Date(giveaway.endDate).toLocaleDateString('fr-FR')}
+                        <p className="text-sm text-gray-400">
+                          <span className="font-semibold text-gray-300">Fin:</span> {new Date(giveaway.endDate).toLocaleDateString('fr-FR')}
                         </p>
                       </div>
                       
-                      <div className="bg-gray-100 p-3 rounded-lg mb-4">
-                        <p className="text-sm font-semibold text-gray-700">Prix à gagner:</p>
+                      <div className="bg-gray-700 p-3 rounded-lg mb-4 border border-gray-600">
+                        <p className="text-sm font-semibold text-blue-400">Prix à gagner:</p>
                         {giveaway.product ? (
                           <div className="flex items-center mt-1">
                             {giveaway.product.imageUrl && (
@@ -382,14 +385,14 @@ export default function Home() {
                               />
                             )}
                             <div>
-                              <p className="font-medium">{giveaway.product.name}</p>
-                              <p className="text-xs text-gray-500">Valeur: {giveaway.product.pointsCost} points</p>
+                              <p className="font-medium text-gray-200">{giveaway.product.name}</p>
+                              <p className="text-xs text-gray-400">Valeur: {giveaway.product.pointsCost} points</p>
                             </div>
                           </div>
                         ) : giveaway.customPrize ? (
-                          <p className="mt-1">{giveaway.customPrize}</p>
+                          <p className="mt-1 text-gray-200">{giveaway.customPrize}</p>
                         ) : (
-                          <p className="text-sm text-gray-500 mt-1">Surprise!</p>
+                          <p className="text-sm text-gray-400 mt-1">Surprise!</p>
                         )}
                       </div>
                       
@@ -400,11 +403,11 @@ export default function Home() {
                         variants={buttonVariants}
                       >
                         {session ? (
-                          <Link href={`/giveaway/${giveaway.id}`} className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-300">
+                          <Link href={`/giveaway/${giveaway.id}`} className="block text-center w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-300">
                             Participer
                           </Link>
                         ) : (
-                          <Link href="/login" className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition duration-300">
+                          <Link href="/login" className="block text-center w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded transition duration-300">
                             Connectez-vous pour participer
                           </Link>
                         )}

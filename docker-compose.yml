@@ -4,10 +4,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+      cache_from:
+        - app:cache
+    image: app:latest
     restart: always
     ports:
       - "3744:3000"
     environment:
+      - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3744}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
@@ -17,6 +23,12 @@ services:
       - DOMAIN=${DOMAIN:-localhost}
     volumes:
       - app_data:/app/prisma
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 volumes:
   app_data:
