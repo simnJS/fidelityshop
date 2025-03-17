@@ -52,10 +52,10 @@ const CookieConsent = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
           <div className="mb-4 md:mb-0 pr-4">
             <h3 className="text-xl font-bold mb-2">Utilisation des cookies</h3>
-            <p className="text-sm mb-2">
+            <p className="text-sm mb-2 text-gray-300">
               Ce site utilise des cookies pour améliorer votre expérience utilisateur. Les cookies essentiels sont nécessaires au fonctionnement du site, tandis que les cookies analytiques nous aident à comprendre comment vous interagissez avec notre site.
             </p>
-            <p className="text-sm">
+            <p className="text-sm text-gray-300">
               Pour en savoir plus, consultez notre <Link href="/privacy-policy" className="text-blue-400 hover:underline">politique de confidentialité</Link>.
             </p>
           </div>

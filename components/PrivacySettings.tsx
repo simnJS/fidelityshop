@@ -77,18 +77,18 @@ const PrivacySettings = () => {
 
   if (!session) {
     return (
-      <div className="bg-red-50 text-red-800 p-4 rounded-lg">
+      <div className="bg-red-800 text-white p-4 rounded-lg">
         Vous devez être connecté pour accéder à vos paramètres de confidentialité.
       </div>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
+    <div className="bg-gray-800 shadow-md rounded-lg p-6 text-white">
       <h2 className="text-2xl font-bold mb-6">Paramètres de confidentialité</h2>
       
       {message && (
-        <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+        <div className={`p-4 mb-6 rounded-lg ${message.type === 'success' ? 'bg-green-800 text-white' : 'bg-red-800 text-white'}`}>
           {message.text}
         </div>
       )}
@@ -96,7 +96,7 @@ const PrivacySettings = () => {
       <div className="space-y-6">
         <div>
           <h3 className="text-lg font-semibold mb-2">Télécharger mes données</h3>
-          <p className="text-gray-600 mb-3">
+          <p className="text-gray-300 mb-3">
             Vous pouvez télécharger toutes les données personnelles que nous détenons à votre sujet.
           </p>
           <button
@@ -108,9 +108,9 @@ const PrivacySettings = () => {
           </button>
         </div>
         
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-2 text-red-600">Supprimer mon compte</h3>
-          <p className="text-gray-600 mb-3">
+        <div className="border-t border-gray-600 pt-6">
+          <h3 className="text-lg font-semibold mb-2 text-red-400">Supprimer mon compte</h3>
+          <p className="text-gray-300 mb-3">
             La suppression de votre compte entraînera la perte de toutes vos données, y compris votre historique d&apos;achats et vos points de fidélité. Cette action est irréversible.
           </p>
           
@@ -122,7 +122,7 @@ const PrivacySettings = () => {
               Demander la suppression de mon compte
             </button>
           ) : (
-            <div className="bg-red-50 p-4 rounded-lg">
+            <div className="bg-red-900 p-4 rounded-lg text-white">
               <p className="font-semibold mb-3">
                 Êtes-vous certain de vouloir supprimer votre compte ? Cette action est irréversible.
               </p>
@@ -133,7 +133,7 @@ const PrivacySettings = () => {
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                className="w-full p-2 border border-gray-600 rounded-md mb-4 bg-gray-700 text-white"
                 placeholder="SUPPRIMER"
               />
               <div className="flex space-x-3">
