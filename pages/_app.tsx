@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import CookieConsent from '../components/CookieConsent';
 
 // Configuration globale d'axios
 axios.defaults.withCredentials = true;
@@ -85,10 +86,14 @@ export default function App({
     <SessionProvider session={session}>
       <DiscordConnectionChecker>
         {isAuthPage ? (
-          <Component {...pageProps} />
+          <>
+            <Component {...pageProps} />
+            <CookieConsent />
+          </>
         ) : (
           <Layout>
             <Component {...pageProps} />
+            <CookieConsent />
           </Layout>
         )}
       </DiscordConnectionChecker>

@@ -15,6 +15,7 @@ export default function Layout({ children }: LayoutProps) {
   const isAuthenticated = status === 'authenticated';
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -146,12 +147,68 @@ export default function Layout({ children }: LayoutProps) {
                       </Link>
                     </motion.li>
                     <motion.li variants={itemVariants}>
-                      <button
-                        onClick={handleSignOut}
-                        className="flex items-center py-2 px-3 rounded-lg hover:bg-gray-800 text-gray-300 hover:text-white transition-all duration-300"
-                      >
-                        <FaSignOutAlt className="mr-1" /> Déconnexion
-                      </button>
+                      <div className="relative ml-3">
+                        <div>
+                          <button
+                            type="button"
+                            className="flex items-center max-w-xs text-sm bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                            id="user-menu-button"
+                            aria-expanded={isProfileMenuOpen}
+                            aria-haspopup="true"
+                            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                          >
+                            <span className="sr-only">Ouvrir le menu utilisateur</span>
+                            <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-white font-medium">
+                              {session.user.name?.charAt(0) || 'U'}
+                            </div>
+                          </button>
+                        </div>
+                        {isProfileMenuOpen && (
+                          <div
+                            className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="user-menu-button"
+                            tabIndex={-1}
+                          >
+                            <a
+                              href="/dashboard"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Tableau de bord
+                            </a>
+                            <a
+                              href="/dashboard/receipts"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Mes reçus
+                            </a>
+                            <a
+                              href="/dashboard/orders"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Mes commandes
+                            </a>
+                            <a
+                              href="/privacy-settings"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Confidentialité et données
+                            </a>
+                            <button
+                              onClick={handleSignOut}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              role="menuitem"
+                            >
+                              Déconnexion
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </motion.li>
                   </>
                 ) : (
@@ -206,12 +263,68 @@ export default function Layout({ children }: LayoutProps) {
                         </Link>
                       </motion.li>
                       <motion.li variants={itemVariants}>
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center py-2 px-3 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white transition-all duration-300"
-                        >
-                          <FaSignOutAlt className="mr-2" /> Déconnexion
-                        </button>
+                        <div className="relative ml-3">
+                          <div>
+                            <button
+                              type="button"
+                              className="flex items-center max-w-xs text-sm bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                              id="user-menu-button"
+                              aria-expanded={isProfileMenuOpen}
+                              aria-haspopup="true"
+                              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                            >
+                              <span className="sr-only">Ouvrir le menu utilisateur</span>
+                              <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-white font-medium">
+                                {session.user.name?.charAt(0) || 'U'}
+                              </div>
+                            </button>
+                          </div>
+                          {isProfileMenuOpen && (
+                            <div
+                              className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                              role="menu"
+                              aria-orientation="vertical"
+                              aria-labelledby="user-menu-button"
+                              tabIndex={-1}
+                            >
+                              <a
+                                href="/dashboard"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                Tableau de bord
+                              </a>
+                              <a
+                                href="/dashboard/receipts"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                Mes reçus
+                              </a>
+                              <a
+                                href="/dashboard/orders"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                Mes commandes
+                              </a>
+                              <a
+                                href="/privacy-settings"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                Confidentialité et données
+                              </a>
+                              <button
+                                onClick={handleSignOut}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                Déconnexion
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </motion.li>
                     </>
                   ) : (

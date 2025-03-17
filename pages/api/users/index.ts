@@ -1,23 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getToken } from 'next-auth/jwt';
 import { prisma } from '../../../lib/prisma';
+import { withApiMiddleware } from '../../../lib/api-middleware';
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Ajouter des headers CORS pour permettre les requêtes entre domaines avec cookies
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-  // Gérer les requêtes OPTIONS (preflight)
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   if (!token) {
@@ -29,91 +18,33 @@ export default async function handler(
     return res.status(403).json({ message: 'Accès refusé - Droits d\'administrateur requis' });
   }
 
-  // GET - Récupérer la liste des utilisateurs
+  // Gérer les différentes méthodes HTTP
   if (req.method === 'GET') {
     try {
-      const { page = '1', limit = '10', search = '', sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
-      
-      // Convertir les paramètres en nombres
-      const pageNum = parseInt(page as string, 10);
-      const limitNum = parseInt(limit as string, 10);
-      const skip = (pageNum - 1) * limitNum;
-      
-      // Créer le filtre de recherche
-      const searchFilter = search 
-        ? {
-            OR: [
-              { username: { contains: search as string, mode: 'insensitive' } },
-              { minecraftName: { contains: search as string, mode: 'insensitive' } }
-            ]
-          } 
-        : {};
-      
-      // Récupérer les utilisateurs avec pagination et tri
+      // Exclure les données sensibles des utilisateurs
       const users = await prisma.user.findMany({
-        where: searchFilter,
-        orderBy: {
-          [sortBy as string]: sortOrder as 'asc' | 'desc'
-        },
-        skip,
-        take: limitNum,
         select: {
           id: true,
           username: true,
-          points: true,
+          // email n'existe pas dans le modèle
           minecraftName: true,
           discordId: true,
           isAdmin: true,
+          points: true,
           createdAt: true,
           updatedAt: true,
-          // Ne pas inclure le mot de passe pour des raisons de sécurité
-          _count: {
-            select: {
-              receipts: true,
-              orders: true,
-              purchases: true
-            }
-          }
+          // Exclure le mot de passe et autres données sensibles
         }
       });
-      
-      // Compter le nombre total d'utilisateurs pour la pagination
-      const totalUsers = await prisma.user.count({
-        where: searchFilter
-      });
-      
-      const totalPages = Math.ceil(totalUsers / limitNum);
-      
-      return res.status(200).json({
-        users: users.map(user => ({
-          id: user.id,
-          username: user.username,
-          points: user.points,
-          minecraftName: user.minecraftName,
-          discordId: user.discordId,
-          isAdmin: user.isAdmin,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          receiptsCount: user._count.receipts,
-          ordersCount: user._count.orders,
-          purchasesCount: user._count.purchases
-        })),
-        pagination: {
-          total: totalUsers,
-          page: pageNum,
-          limit: limitNum,
-          totalPages,
-          hasMore: pageNum < totalPages
-        }
-      });
+
+      return res.status(200).json(users);
     } catch (error) {
       console.error('Erreur lors de la récupération des utilisateurs:', error);
       return res.status(500).json({ message: 'Erreur du serveur' });
     }
-  }
-  
-  // Méthode non supportée
-  else {
+  } else {
     return res.status(405).json({ message: 'Méthode non autorisée' });
   }
-} 
+}
+
+export default withApiMiddleware(handler); 
