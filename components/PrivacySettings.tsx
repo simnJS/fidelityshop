@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 const PrivacySettings = () => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [accountDeleted, setAccountDeleted] = useState(false);
 
   const downloadMyData = async () => {
     if (!session) return;
@@ -53,11 +56,26 @@ const PrivacySettings = () => {
     setMessage(null);
     
     try {
-      await axios.post('/api/users/me/request-deletion');
-      setMessage({ 
-        text: 'Votre demande de suppression a été enregistrée. Vous recevrez une confirmation lorsque vos données auront été supprimées.', 
-        type: 'success' 
-      });
+      const response = await axios.post('/api/users/me/request-deletion');
+      
+      if (response.data.shouldLogout) {
+        setAccountDeleted(true);
+        setMessage({ 
+          text: 'Votre compte a été supprimé avec succès. Vous allez être déconnecté dans 5 secondes...', 
+          type: 'success' 
+        });
+        
+        // Déconnecter l'utilisateur après 5 secondes
+        setTimeout(() => {
+          signOut({ callbackUrl: '/' });
+        }, 5000);
+      } else {
+        setMessage({ 
+          text: 'Votre demande de suppression a été enregistrée.', 
+          type: 'success' 
+        });
+      }
+      
       setShowConfirmation(false);
     } catch (error) {
       console.error('Erreur lors de la demande de suppression:', error);
@@ -79,6 +97,19 @@ const PrivacySettings = () => {
     return (
       <div className="bg-red-800 text-white p-4 rounded-lg">
         Vous devez être connecté pour accéder à vos paramètres de confidentialité.
+      </div>
+    );
+  }
+
+  if (accountDeleted) {
+    return (
+      <div className="bg-gray-800 shadow-md rounded-lg p-6 text-white">
+        <div className="p-4 mb-6 rounded-lg bg-green-800 text-white">
+          <p>Votre compte a été supprimé avec succès. Vous allez être déconnecté automatiquement...</p>
+        </div>
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        </div>
       </div>
     );
   }

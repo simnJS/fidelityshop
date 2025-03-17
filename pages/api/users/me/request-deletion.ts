@@ -28,35 +28,25 @@ async function handler(
         return res.status(404).json({ message: 'Utilisateur non trouvé' });
       }
 
-      // Dans un environnement de production, vous pourriez:
-      // 1. Envoyer un email à l'administrateur pour traiter la demande
-      // 2. Stocker la demande dans une table dédiée
-      // 3. Mettre en place un délai de grâce avant suppression
-      
-      // Pour l'exemple, nous allons juste anonymiser les données:
-      
-      // Note: Ceci est une implémentation simplifiée.
-      // Dans un environnement réel, vous devriez:
-      // - Mettre en place un processus plus robuste
-      // - Respecter les contraintes RGPD (délai de 30 jours, etc.)
-      // - Envoyer des emails de confirmation
-      
-      // Anonymiser l'utilisateur au lieu de le supprimer complètement
+      // Pour l'exemple, nous anonymisons les données et marquons le compte comme supprimé:
       await prisma.user.update({
         where: { id: userId },
         data: {
           username: `deleted_${Date.now()}`,
-          password: '', // Effacer le mot de passe
+          password: 'COMPTE_SUPPRIME_' + Math.random().toString(36).substring(2, 15), // Mot de passe aléatoire pour empêcher la connexion
           minecraftName: null,
           discordId: null,
+          isDeleted: true,
+          deletedAt: new Date()
         }
       });
-      
-      // Une alternative serait de créer un statut "pending_deletion"
-      // et de mettre en place un processus de suppression différé
 
+      // NextAuth va vérifier isDeleted lors des tentatives de connexion
+      // Nous devons ajouter cette vérification dans [...nextauth].ts
+      
       return res.status(200).json({ 
-        message: 'Votre demande de suppression a été enregistrée. Votre compte sera supprimé dans les 30 jours conformément au RGPD.'
+        message: 'Votre compte a été supprimé. Vous allez être déconnecté automatiquement.',
+        shouldLogout: true
       });
     } catch (error) {
       console.error('Erreur lors de la demande de suppression:', error);

@@ -24,6 +24,11 @@ export const authOptions = {
           return null;
         }
 
+        if (user.isDeleted) {
+          console.log(`Tentative de connexion à un compte supprimé: ${user.username}`);
+          return null;
+        }
+
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isPasswordValid) {
@@ -44,6 +49,19 @@ export const authOptions = {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
       }
+      
+      if (token?.id) {
+        const user = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { isDeleted: true }
+        });
+        
+        if (user?.isDeleted) {
+          console.log(`Token invalidé pour compte supprimé: ${token.id}`);
+          return null;
+        }
+      }
+      
       return token;
     },
     async session({ session, token }) {

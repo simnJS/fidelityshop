@@ -23,6 +23,8 @@ model User {
   minecraftName  String?
   discordId      String?
   isAdmin        Boolean        @default(false)
+  isDeleted      Boolean        @default(false)
+  deletedAt      DateTime?
   purchases      Purchase[]
   receipts       Receipt[]
   orders         Order[]
